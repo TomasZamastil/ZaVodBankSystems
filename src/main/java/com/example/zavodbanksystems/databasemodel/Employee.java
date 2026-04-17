@@ -3,7 +3,7 @@ package com.example.zavodbanksystems.databasemodel;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Employee")
 public class Employee {
@@ -15,8 +15,8 @@ public class Employee {
     @JoinColumn(name = "address_idAddress", nullable = false)
     private Address address;
 
-    @Column(name = "social_security", nullable = false)
-    private Integer socialSecurity;
+    @Column(name = "social_security", nullable = false, length = 100)
+    private String socialSecurity;
 
     @Column(name = "position", nullable = false, length = 100)
     private String position;
@@ -53,11 +53,11 @@ public class Employee {
         this.address = address;
     }
 
-    public Integer getSocialSecurity() {
+    public String getSocialSecurity() {
         return socialSecurity;
     }
 
-    public void setSocialSecurity(Integer socialSecurity) {
+    public void setSocialSecurity(String socialSecurity) {
         this.socialSecurity = socialSecurity;
     }
 

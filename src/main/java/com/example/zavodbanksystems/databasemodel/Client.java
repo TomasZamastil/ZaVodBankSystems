@@ -2,7 +2,7 @@ package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
 import java.util.Set;
-
+//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Client")
 public class Client {
@@ -17,8 +17,8 @@ public class Client {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "social_security_ico", nullable = false)
-    private Integer socialSecurityIco;
+    @Column(name = "social_security_ico", nullable = false, length = 100)
+    private String socialSecurityIco;
 
     @Column(name = "password_hash", nullable = false, length = 45)
     private String passwordHash;
@@ -59,11 +59,11 @@ public class Client {
         this.name = name;
     }
 
-    public Integer getSocialSecurityIco() {
+    public String getSocialSecurityIco() {
         return socialSecurityIco;
     }
 
-    public void setSocialSecurityIco(Integer socialSecurityIco) {
+    public void setSocialSecurityIco(String socialSecurityIco) {
         this.socialSecurityIco = socialSecurityIco;
     }
 

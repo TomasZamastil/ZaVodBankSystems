@@ -1,8 +1,7 @@
 package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
-import java.util.List;
-
+//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Address")
 public class Address {

@@ -2,7 +2,7 @@ package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-
+//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Liability_Investment")
 public class LiabilityInvestment {
@@ -10,7 +10,7 @@ public class LiabilityInvestment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idLiabilityInvestment;
 
-    @Column(nullable = false, precision = 19, scale = 4)
+    @Column(name = "base", nullable = false, precision = 19, scale = 4)
     private BigDecimal base;
 
     @Column(name = "loan_name", nullable = false, unique = true, length = 45)
@@ -19,14 +19,18 @@ public class LiabilityInvestment {
     @Column(name = "outside_target")
     private Integer outsideTarget;
 
-    @Column(nullable = false, precision = 8, scale = 5)
+    @Column(name = "interest", nullable = false, precision = 8, scale = 5)
     private BigDecimal interest;
 
-    @Column(nullable = false)
+    @Column(name = "active", nullable = false)
     private Boolean active;
 
     @Column(name = "current_base", nullable = false, precision = 19, scale = 4)
     private BigDecimal currentBase;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Account_idAccount")
+    private Account account;
 
     public Integer getIdLiabilityInvestment() {
         return idLiabilityInvestment;

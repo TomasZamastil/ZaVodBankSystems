@@ -1,7 +1,7 @@
 package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
-
+//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Account_Type")
 public class AccountType {

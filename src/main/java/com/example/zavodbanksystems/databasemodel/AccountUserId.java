@@ -2,7 +2,7 @@ package com.example.zavodbanksystems.databasemodel;
 
 import java.io.Serializable;
 import java.util.Objects;
-
+//TODO: tohle je jen ID class, zkontroluj to s AI
 public class AccountUserId implements Serializable {
     private Integer account;
     private Integer client;
