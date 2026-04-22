@@ -87,4 +87,8 @@ public class LiabilityInvestment {
     public void setCurrentBase(BigDecimal currentBase) {
         this.currentBase = currentBase;
     }
+
+    public Account getAccount() { return account; }
+
+    public void setAccount(Account account) { this.account = account; }
 }

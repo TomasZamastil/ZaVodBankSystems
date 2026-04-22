@@ -7,12 +7,13 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Money_Transfer")
 public class MoneyTransfer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idMoneyTransfer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Salaty_idSalary")
+    @JoinColumn(name = "Salary_idSalary")
     private Salary salary;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,7 +43,7 @@ public class MoneyTransfer {
     @Column(name = "variable_symbol", nullable = false)
     private Integer variableSymbol;
 
-    @Column(name = "outside_token_coms", nullable = false)
+    @Column(name = "outside_token_coms", columnDefinition = "JSON")
     private String outsideTokenComs;
 
     public Integer getIdMoneyTransfer() {

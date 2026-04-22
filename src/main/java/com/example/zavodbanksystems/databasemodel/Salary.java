@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class Salary {
 
     @Id
-    @Column(name = "idSalary")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idSalary;
 
     @ManyToOne(fetch = FetchType.LAZY)
