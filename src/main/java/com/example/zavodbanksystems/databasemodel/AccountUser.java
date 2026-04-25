@@ -1,7 +1,7 @@
 package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
-//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
+
 @Entity
 @Table(name = "Account_User")
 @IdClass(AccountUserId.class)
@@ -9,12 +9,12 @@ public class AccountUser {
 
     @Id
     @ManyToOne
-    @JoinColumn(name = "Account_idAccount", referencedColumnName = "idAccount")
+    @JoinColumn(name = "Account_idAccount")
     private Account account;
 
     @Id
     @ManyToOne
-    @JoinColumn(name = "Client_idClient", referencedColumnName = "idClient")
+    @JoinColumn(name = "Client_idClient")
     private Client client;
 
     public AccountUser() {}

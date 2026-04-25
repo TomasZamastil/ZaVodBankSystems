@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idEmployee")
     private Integer idEmployee;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +31,7 @@ public class Employee {
     @Column(name = "bonus", precision = 7, scale = 4)
     private BigDecimal bonus;
 
-    @Column(name = "comission", precision = 19, scale = 4)
+    @Column(name = "commission", precision = 19, scale = 4)
     private BigDecimal commission;
 
     @ManyToOne(fetch = FetchType.LAZY)

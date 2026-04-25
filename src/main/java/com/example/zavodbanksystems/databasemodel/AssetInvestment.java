@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 public class AssetInvestment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idAsset_Investment")
     private Integer idAssetInvestment;
 
     @ManyToOne(fetch = FetchType.LAZY)

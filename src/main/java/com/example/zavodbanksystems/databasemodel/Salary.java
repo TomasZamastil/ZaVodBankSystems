@@ -11,6 +11,7 @@ public class Salary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idSalary")
     private Integer idSalary;
 
     @ManyToOne(fetch = FetchType.LAZY)

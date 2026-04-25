@@ -10,6 +10,7 @@ public class MoneyTransfer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idMoney_Transfer")
     private Integer idMoneyTransfer;
 
     @ManyToOne(fetch = FetchType.LAZY)
