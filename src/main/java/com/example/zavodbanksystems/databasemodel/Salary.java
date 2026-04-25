@@ -26,6 +26,12 @@ public class Salary {
 
     public Salary() {}
 
+    public Salary(Employee employee, BigDecimal amount, LocalDateTime payday) {
+        this.employee = employee;
+        this.amount = amount;
+        this.payday = payday;
+    }
+
     public Integer getIdSalary() {
         return idSalary;
     }

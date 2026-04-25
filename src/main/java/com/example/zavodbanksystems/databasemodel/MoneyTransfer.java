@@ -47,6 +47,24 @@ public class MoneyTransfer {
     @Column(name = "outside_token_coms", columnDefinition = "JSON")
     private String outsideTokenComs;
 
+    public MoneyTransfer() {
+    }
+
+    public MoneyTransfer(Salary salary, LiabilityInvestment liabilityInvestment, Account sourceAccount,
+                         Account destinationAccount, Integer outsideTarget, Integer outsideSource, BigDecimal amount,
+                         LocalDateTime transferDate, Integer variableSymbol, String outsideTokenComs) {
+        this.salary = salary;
+        this.liabilityInvestment = liabilityInvestment;
+        this.sourceAccount = sourceAccount;
+        this.destinationAccount = destinationAccount;
+        this.outsideTarget = outsideTarget;
+        this.outsideSource = outsideSource;
+        this.amount = amount;
+        this.transferDate = transferDate;
+        this.variableSymbol = variableSymbol;
+        this.outsideTokenComs = outsideTokenComs;
+    }
+
     public Integer getIdMoneyTransfer() {
         return idMoneyTransfer;
     }

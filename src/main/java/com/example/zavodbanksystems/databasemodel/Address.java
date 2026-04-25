@@ -25,6 +25,18 @@ public class Address {
     @Column(name = "apartment_number")
     private Integer apartmentNumber;
 
+    public Address() {
+    }
+
+    public Address(String city, String postalCode, String street, Integer buildingNumber, Integer apartmentNumber) {
+        this.idAddress = idAddress;
+        this.city = city;
+        this.postalCode = postalCode;
+        this.street = street;
+        this.buildingNumber = buildingNumber;
+        this.apartmentNumber = apartmentNumber;
+    }
+
     public Integer getIdAddress() {
         return idAddress;
     }

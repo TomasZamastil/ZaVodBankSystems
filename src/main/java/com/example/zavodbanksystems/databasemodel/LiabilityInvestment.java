@@ -33,6 +33,20 @@ public class LiabilityInvestment {
     @JoinColumn(name = "Account_idAccount")
     private Account account;
 
+    public LiabilityInvestment() {
+    }
+
+    public LiabilityInvestment(BigDecimal base, String loanName, Integer outsideTarget, BigDecimal interest,
+                               Boolean active, BigDecimal currentBase, Account account) {
+        this.base = base;
+        this.loanName = loanName;
+        this.outsideTarget = outsideTarget;
+        this.interest = interest;
+        this.active = active;
+        this.currentBase = currentBase;
+        this.account = account;
+    }
+
     public Integer getIdLiabilityInvestment() {
         return idLiabilityInvestment;
     }

@@ -37,6 +37,21 @@ public class AssetInvestment {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
+    public AssetInvestment() {
+    }
+
+    public AssetInvestment(Employee employee, Client client, String loanName, BigDecimal base, BigDecimal currentBase,
+                           BigDecimal interest, Integer variableSymbol, Boolean active) {
+        this.employee = employee;
+        this.client = client;
+        this.loanName = loanName;
+        this.base = base;
+        this.currentBase = currentBase;
+        this.interest = interest;
+        this.variableSymbol = variableSymbol;
+        this.active = active;
+    }
+
     public Integer getIdAssetInvestment() {
         return idAssetInvestment;
     }

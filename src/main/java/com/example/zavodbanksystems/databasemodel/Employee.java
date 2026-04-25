@@ -38,6 +38,20 @@ public class Employee {
     @JoinColumn(name = "Client_idClient", nullable = false)
     private Client client;
 
+    public Employee() {
+    }
+
+    public Employee(Address address, String socialSecurity, String position, BigDecimal basePay, LocalDateTime hireDate, BigDecimal bonus, BigDecimal commission, Client client) {
+        this.address = address;
+        this.socialSecurity = socialSecurity;
+        this.position = position;
+        this.basePay = basePay;
+        this.hireDate = hireDate;
+        this.bonus = bonus;
+        this.commission = commission;
+        this.client = client;
+    }
+
     public Integer getIdEmployee() {
         return idEmployee;
     }

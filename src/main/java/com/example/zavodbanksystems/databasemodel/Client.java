@@ -2,6 +2,10 @@ package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 //TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
 @Entity
 @Table(name = "Client")
@@ -35,6 +39,33 @@ public class Client {
 
     @ManyToMany(mappedBy = "clients")
     private Set<Account> accounts;
+
+    public Client() {}
+
+    public Client(Address address, String name, String socialSecurityIco,
+                  String plainPassword, String email, String phone, String profilePictureUrl) {
+        this.address = address;
+        this.name = name;
+        this.socialSecurityIco = socialSecurityIco;
+        this.passwordHash = hashPassword(plainPassword);
+        this.email = email;
+        this.phone = phone;
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public static String hashPassword(String plainPassword) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(plainPassword.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 not available", e);
+        }
+    }
 
     public Integer getIdClient() {
         return idClient;

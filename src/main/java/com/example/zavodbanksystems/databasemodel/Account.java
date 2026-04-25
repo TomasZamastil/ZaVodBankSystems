@@ -33,6 +33,17 @@ public class Account {
     )
     private Set<Client> clients;
 
+    public Account() {
+    }
+
+    public Account(Set<Client> clients, Boolean activeStatus, BigDecimal balance, AccountType accountType) {
+        this.clients = clients;
+        this.activeStatus = activeStatus;
+        this.balance = balance;
+        this.accountType = accountType;
+        this.interest = this.accountType.getInterestRate();
+    }
+
     public Integer getIdAccount() {
         return idAccount;
     }
