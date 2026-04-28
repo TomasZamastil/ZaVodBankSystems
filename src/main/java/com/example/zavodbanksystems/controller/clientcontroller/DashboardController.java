@@ -28,6 +28,7 @@ public class DashboardController {
         Client client = opt.get();
         model.addAttribute("client", client);
         model.addAttribute("accounts", client.getAccounts());
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
         return "client/dashboard";
     }
 }

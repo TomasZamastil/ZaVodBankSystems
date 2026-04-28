@@ -25,7 +25,7 @@ public class Client {
     @Column(name = "social_security_ico", nullable = false, length = 100)
     private String socialSecurityIco;
 
-    @Column(name = "password_hash", nullable = false, length = 45)
+    @Column(name = "password_hash", nullable = false, length = 64)
     private String passwordHash;
 
     @Column(name = "email", length = 100)

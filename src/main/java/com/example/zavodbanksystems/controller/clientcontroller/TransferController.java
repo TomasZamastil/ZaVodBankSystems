@@ -36,6 +36,7 @@ public class TransferController {
         if (opt.isEmpty()) return "redirect:/login";
 
         model.addAttribute("accounts", opt.get().getAccounts());
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
         return "client/transfer";
     }
 
@@ -59,6 +60,7 @@ public class TransferController {
         if (!ownsSource) {
             model.addAttribute("error", "Nemáte oprávnění k tomuto účtu.");
             model.addAttribute("accounts", accounts);
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
             return "client/transfer";
         }
 
@@ -68,6 +70,7 @@ public class TransferController {
         if (srcOpt.isEmpty() || dstOpt.isEmpty()) {
             model.addAttribute("error", "Cílový účet nenalezen.");
             model.addAttribute("accounts", accounts);
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
             return "client/transfer";
         }
 
@@ -77,6 +80,7 @@ public class TransferController {
         if (src.getBalance().compareTo(amount) < 0) {
             model.addAttribute("error", "Nedostatek prostředků na účtu.");
             model.addAttribute("accounts", accounts);
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
             return "client/transfer";
         }
 
@@ -91,6 +95,7 @@ public class TransferController {
 
         model.addAttribute("success", "Převod proběhl úspěšně.");
         model.addAttribute("accounts", clientOpt.get().getAccounts());
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
         return "client/transfer";
     }
 }

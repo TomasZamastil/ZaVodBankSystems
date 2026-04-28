@@ -26,7 +26,7 @@ public class EmployeeManagementController {
 
     @GetMapping("/employeeManagement")
     public String employeeManagement(HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         model.addAttribute("employees", employeeRepository.findAll());
         model.addAttribute("clients", clientRepository.findAll());
         return "admin/employeeManagement";
@@ -43,7 +43,7 @@ public class EmployeeManagementController {
                                  @RequestParam Integer buildingNumber,
                                  @RequestParam(required = false) Integer apartmentNumber,
                                  HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
 
         Optional<Client> clientOpt = clientRepository.findById(clientId);
         if (clientOpt.isPresent()) {

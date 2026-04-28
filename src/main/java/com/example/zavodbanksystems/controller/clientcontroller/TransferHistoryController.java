@@ -44,6 +44,7 @@ public class TransferHistoryController {
 
         model.addAttribute("transfers", transfers);
         model.addAttribute("accounts", accounts);
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
         return "client/transferHistory";
     }
 }

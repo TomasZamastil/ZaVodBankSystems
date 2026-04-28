@@ -14,7 +14,7 @@ public class EmployeeOverviewController {
 
     @GetMapping("/employeeOverview")
     public String employeeOverview(HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         model.addAttribute("employees", employeeRepository.findAll());
         return "admin/employeeOverview";
     }

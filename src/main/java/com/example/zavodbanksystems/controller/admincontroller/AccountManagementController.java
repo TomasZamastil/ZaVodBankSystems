@@ -27,7 +27,7 @@ public class AccountManagementController {
 
     @GetMapping("/accountManagement")
     public String accountManagement(HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("accountTypes", accountTypeRepository.findAll());
         model.addAttribute("clients", clientRepository.findAll());
@@ -38,7 +38,7 @@ public class AccountManagementController {
     public String createAccount(@RequestParam Integer accountTypeId,
                                 @RequestParam Integer clientId,
                                 HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
 
         Optional<AccountType> typeOpt = accountTypeRepository.findById(accountTypeId);
         Optional<Client> clientOpt = clientRepository.findById(clientId);

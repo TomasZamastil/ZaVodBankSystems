@@ -20,7 +20,7 @@ public class ClientCreationController {
 
     @GetMapping("/clientCreation")
     public String clientCreation(HttpSession session) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         return "admin/clientCreation";
     }
 
@@ -36,7 +36,7 @@ public class ClientCreationController {
                                @RequestParam Integer buildingNumber,
                                @RequestParam(required = false) Integer apartmentNumber,
                                HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
 
         Address address = new Address(city, postalCode, street, buildingNumber, apartmentNumber);
         addressRepository.save(address);
