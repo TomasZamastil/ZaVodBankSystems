@@ -1,10 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZaVod Bank – Nový klient</title>
+    <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
+
 </head>
 <body>
-
+<nav>
+    <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
+    <span class="nav-sec">Správa</span>
+    <a href="/clientOverview" class="nav-link">Klienti</a>
+    <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
+    <a href="/clientCreation" class="nav-link active">Nový klient</a>
+    <a href="/accountManagement" class="nav-link">Správa účtů</a>
+    <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
+    <a href="/salaryManagement" class="nav-link">Mzdy</a>
+    <div class="nav-bottom">
+        <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
+        <a href="/logout" class="nav-link">Odhlásit se</a>
+    </div>
+</nav>
+<main>
+    <h1>Nový klient</h1>
+    <p class="sub">Vytvoření nového klienta v systému</p>
+    <div class="alert alert-err" th:if="${error}" th:text="${error}"></div>
+    <div class="alert alert-ok" th:if="${success}" th:text="${success}"></div>
+    <div class="card">
+        <form th:action="@{/clientCreation}" method="post">
+            <div class="section-title">Osobní údaje</div>
+            <div class="form-group"><label>Celé jméno</label><input type="text" name="name" required placeholder="Jan Novák"/></div>
+            <div class="row2">
+                <div class="form-group"><label>Rodné číslo / IČO</label><input type="text" name="socialSecurityIco" required placeholder="9001011234"/></div>
+                <div class="form-group"><label>Heslo</label><input type="password" name="password" required placeholder="••••••••"/></div>
+            </div>
+            <div class="row2">
+                <div class="form-group"><label>E-mail</label><input type="email" name="email" placeholder="jan@example.cz"/></div>
+                <div class="form-group"><label>Telefon</label><input type="text" name="phone" placeholder="+420..."/></div>
+            </div>
+            <div class="section-title">Adresa</div>
+            <div class="row2">
+                <div class="form-group"><label>Město</label><input type="text" name="city" required placeholder="Praha"/></div>
+                <div class="form-group"><label>PSČ</label><input type="text" name="postalCode" required placeholder="110 00"/></div>
+            </div>
+            <div class="form-group"><label>Ulice</label><input type="text" name="street" required placeholder="Vodičkova"/></div>
+            <div class="row2">
+                <div class="form-group"><label>Číslo popisné</label><input type="number" name="buildingNumber" required placeholder="15"/></div>
+                <div class="form-group"><label>Číslo bytu (nepovinné)</label><input type="number" name="apartmentNumber" placeholder="3"/></div>
+            </div>
+            <button type="submit" class="btn">Vytvořit klienta</button>
+        </form>
+    </div>
+</main>
 </body>
 </html>

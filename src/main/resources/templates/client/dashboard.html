@@ -1,10 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZaVod Bank – Přehled</title>
+    <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
+
 </head>
 <body>
+<nav>
+    <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
+    <span class="nav-sec">Klient</span>
+    <a href="/dashboard" class="nav-link active">Přehled účtů</a>
+    <a href="/transfer" class="nav-link">Nový převod</a>
+    <a href="/transferHistory" class="nav-link">Historie převodů</a>
+    <a href="/inAppLoan" class="nav-link">Moje úvěry</a>
+    <a href="/profile" class="nav-link">Profil</a>
+    <div class="nav-bottom"><a href="/logout" class="nav-link">Odhlásit se</a></div>
+</nav>
+<main>
+    <h1>Dobrý den, <span th:text="${client.name}">Klient</span></h1>
+    <p class="sub">Přehled vašich účtů</p>
 
+    <div class="grid" th:if="${not #lists.isEmpty(accounts)}">
+        <div class="acc-card" th:each="a : ${accounts}">
+            <div class="acc-header">
+                <span class="acc-type" th:text="${a.accountType.accountTypeName}">Typ</span>
+                <span class="badge" th:classappend="${a.activeStatus} ? 'badge-on' : 'badge-off'"
+                      th:text="${a.activeStatus} ? 'Aktivní' : 'Neaktivní'">Stav</span>
+            </div>
+            <div class="balance" th:classappend="${a.balance.signum() < 0} ? 'neg'"
+                 th:text="${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</div>
+            <div class="acc-id" th:text="'Účet č. ' + ${a.idAccount}">Účet č. 1</div>
+            <div class="acc-foot">
+                <span th:text="'Úrok: ' + ${a.interest} + ' %'">0 %</span>
+                <a th:href="@{/transfer}" class="btn">Převést</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" th:if="${#lists.isEmpty(accounts)}">
+        <h3>Žádné účty</h3>
+        <p>K vašemu profilu nejsou přiřazeny žádné účty.</p>
+    </div>
+</main>
 </body>
 </html>

@@ -1,10 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZaVod Bank – Správa účtů</title>
+    <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
+
 </head>
 <body>
-
+<nav>
+    <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
+    <span class="nav-sec">Správa</span>
+    <a href="/clientOverview" class="nav-link">Klienti</a>
+    <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
+    <a href="/clientCreation" class="nav-link">Nový klient</a>
+    <a href="/accountManagement" class="nav-link active">Správa účtů</a>
+    <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
+    <a href="/salaryManagement" class="nav-link">Mzdy</a>
+    <div class="nav-bottom">
+        <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
+        <a href="/logout" class="nav-link">Odhlásit se</a>
+    </div>
+</nav>
+<main>
+    <h1>Správa účtů</h1>
+    <p class="sub">Přehled všech účtů a vytvoření nového</p>
+    <div class="alert alert-err" th:if="${error}" th:text="${error}"></div>
+    <div class="alert alert-ok" th:if="${success}" th:text="${success}"></div>
+    <div class="layout">
+        <table>
+            <thead><tr><th>ID</th><th>Typ</th><th>Zůstatek</th><th>Úrok</th><th>Stav</th></tr></thead>
+            <tbody>
+                <tr th:each="a : ${accounts}">
+                    <td th:text="${a.idAccount}">1</td>
+                    <td th:text="${a.accountType.accountTypeName}">Typ</td>
+                    <td th:text="${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
+                    <td th:text="${a.interest} + ' %'">0 %</td>
+                    <td><span class="badge" th:classappend="${a.activeStatus} ? 'badge-on' : 'badge-off'"
+                              th:text="${a.activeStatus} ? 'Aktivní' : 'Neaktivní'">Stav</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="card">
+            <div class="card-title">Nový účet</div>
+            <form th:action="@{/accountManagement}" method="post">
+                <div class="form-group">
+                    <label>Typ účtu</label>
+                    <select name="accountTypeId" required>
+                        <option th:each="t : ${accountTypes}" th:value="${t.idAccountType}" th:text="${t.accountTypeName}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Přiřadit klientovi</label>
+                    <select name="clientId" required>
+                        <option th:each="c : ${clients}" th:value="${c.idClient}" th:text="${c.name} + ' (' + ${c.socialSecurityIco} + ')'"></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Vytvořit účet</button>
+            </form>
+        </div>
+    </div>
+</main>
 </body>
 </html>

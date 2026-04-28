@@ -15,7 +15,7 @@ public class AccountType {
     @Column(name = "account_type_name", nullable = false, unique = true, length = 45)
     private String accountTypeName;
 
-    enum Type {
+    public enum Type {
         SAVINGS, CHECKING, INTERNAL
     }
 
