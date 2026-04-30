@@ -43,6 +43,7 @@ public class BootstrapData implements CommandLineRunner {
     public void run(String... args) {
         if (clientRepository.count() > 0) return;
 
+        // === TYPY ÚČTŮ ===
         AccountType bezny = new AccountType(AccountType.Type.CHECKING);
         AccountType sporici = new AccountType(AccountType.Type.SAVINGS);
         AccountType interni = new AccountType(AccountType.Type.INTERNAL);
@@ -50,17 +51,23 @@ public class BootstrapData implements CommandLineRunner {
         accountTypeRepository.save(sporici);
         accountTypeRepository.save(interni);
 
+        // === ADRESY ===
         Address adr1 = new Address("Praha", "110 00", "Vodičkova", 15, 3);
         Address adr2 = new Address("Brno", "602 00", "Křenová", 42, 12);
         Address adr3 = new Address("Ostrava", "702 00", "Stodolní", 8, null);
         Address adr4 = new Address("Plzeň", "301 00", "Americká", 124, 5);
-        Address adrEmp = new Address("Pardubice", "530 09", "Jiřího Potůčka", 117, 12);
+        Address adrEmp1 = new Address("Pardubice", "530 09", "Jiřího Potůčka", 117, 12);
+        Address adrEmp2 = new Address("Praha", "120 00", "Mánesova", 28, 4);
+        Address adrEmp3 = new Address("Brno", "602 00", "Lidická", 12, null);
         addressRepository.save(adr1);
         addressRepository.save(adr2);
         addressRepository.save(adr3);
         addressRepository.save(adr4);
-        addressRepository.save(adrEmp);
+        addressRepository.save(adrEmp1);
+        addressRepository.save(adrEmp2);
+        addressRepository.save(adrEmp3);
 
+        // === KLIENTI ===
         Client alena = new Client(adr1, "Alena Svobodová", "9255209876", "test123",
                 "a.svobodova@gmail.com", "+420608987654", null);
         Client petr = new Client(adr2, "Petr Kučera", "7801014321", "test123",
@@ -69,49 +76,91 @@ public class BootstrapData implements CommandLineRunner {
                 "info@stodolni-gastro.cz", "+420596111222", null);
         Client textilka = new Client(adr4, "Liberecká Textilka a.s.", "44556677", "test123",
                 "hr@libereckatextilka.cz", "+420485100200", null);
-        Client marek = new Client(adrEmp, "Marek Benson", "8801101122", "test123",
+        // Zaměstnanci
+        Client marek = new Client(adrEmp1, "Marek Benson", "8801101122", "test123",
                 "benson.m@banka.cz", "+420777001002", null);
+        Client lucie = new Client(adrEmp2, "Lucie Poradenská", "9205124455", "test123",
+                "lucie.p@banka.cz", "+420608111222", null);
+        Client jakub = new Client(adrEmp3, "Jakub Pokladní", "7508209988", "test123",
+                "jakub.p@banka.cz", null, null);
+
         clientRepository.save(alena);
         clientRepository.save(petr);
         clientRepository.save(gastro);
         clientRepository.save(textilka);
         clientRepository.save(marek);
+        clientRepository.save(lucie);
+        clientRepository.save(jakub);
 
+        // === ÚČTY ===
         Set<Client> s1 = new HashSet<>(); s1.add(alena);
         Set<Client> s2 = new HashSet<>(); s2.add(alena);
         Set<Client> s3 = new HashSet<>(); s3.add(gastro); s3.add(alena);
         Set<Client> s4 = new HashSet<>(); s4.add(petr);
         Set<Client> s5 = new HashSet<>(); s5.add(petr); s5.add(textilka);
+        Set<Client> s6 = new HashSet<>(); s6.add(marek);
+        Set<Client> s7 = new HashSet<>(); s7.add(lucie);
+        Set<Client> s8 = new HashSet<>(); s8.add(jakub);
+
+        // Interní účet – přístup mají všichni zaměstnanci, manažer = ten kdo má INTERNAL účet
+        Set<Client> sInterni = new HashSet<>();
+        sInterni.add(marek);
+        sInterni.add(lucie);
+        sInterni.add(jakub);
 
         Account ucet1 = new Account(s1, true, new BigDecimal("15420.50"), bezny);
         Account ucet2 = new Account(s2, true, new BigDecimal("500000.00"), sporici);
         Account ucet3 = new Account(s3, false, new BigDecimal("0.00"), bezny);
         Account ucet4 = new Account(s4, true, new BigDecimal("85600.20"), bezny);
         Account ucet5 = new Account(s5, true, new BigDecimal("125400.00"), sporici);
+        Account ucetMarek = new Account(s6, true, new BigDecimal("10000.00"), bezny);
+        Account ucetLucie = new Account(s7, true, new BigDecimal("10000.00"), bezny);
+        Account ucetJakub = new Account(s8, true, new BigDecimal("10000.00"), bezny);
+        Account ucetInterni = new Account(sInterni, true, new BigDecimal("10000000.00"), interni);
+
         accountRepository.save(ucet1);
         accountRepository.save(ucet2);
         accountRepository.save(ucet3);
         accountRepository.save(ucet4);
         accountRepository.save(ucet5);
+        accountRepository.save(ucetMarek);
+        accountRepository.save(ucetLucie);
+        accountRepository.save(ucetJakub);
+        accountRepository.save(ucetInterni);
 
-        Employee emp = new Employee(adrEmp, "8801101122", "Manažer pobočky",
-                new BigDecimal("65000.00"),
-                LocalDateTime.of(2020, 5, 15, 9, 0),
+        // === ZAMĚSTNANCI ===
+        Employee emp1 = new Employee(adrEmp1, "8801101122", "Manažer pobočky",
+                new BigDecimal("65000.00"), LocalDateTime.of(2020, 5, 15, 9, 0),
                 new BigDecimal("500.00"), null, marek);
-        employeeRepository.save(emp);
+        Employee emp2 = new Employee(adrEmp2, "9205124455", "Bankovní poradce",
+                new BigDecimal("42000.00"), LocalDateTime.of(2022, 1, 10, 8, 30),
+                new BigDecimal("250.00"), null, lucie);
+        Employee emp3 = new Employee(adrEmp3, "7508209988", "Pokladník",
+                new BigDecimal("35000.00"), LocalDateTime.of(2018, 11, 1, 8, 0),
+                null, null, jakub);
+        employeeRepository.save(emp1);
+        employeeRepository.save(emp2);
+        employeeRepository.save(emp3);
 
-        salaryRepository.save(new Salary(emp, new BigDecimal("65000.00"),
+        // === MZDY ===
+        salaryRepository.save(new Salary(emp1, new BigDecimal("65000.00"),
+                LocalDateTime.of(2026, 4, 1, 8, 0)));
+        salaryRepository.save(new Salary(emp2, new BigDecimal("42000.00"),
+                LocalDateTime.of(2026, 4, 1, 8, 0)));
+        salaryRepository.save(new Salary(emp3, new BigDecimal("35000.00"),
                 LocalDateTime.of(2026, 4, 1, 8, 0)));
 
-        assetInvestmentRepository.save(new AssetInvestment(emp, alena,
+        // === ASSET INVESTMENT ===
+        assetInvestmentRepository.save(new AssetInvestment(emp1, alena,
                 "Hypotéka - Vodičkova",
                 new BigDecimal("4500000.00"), new BigDecimal("4250000.00"),
                 new BigDecimal("5.49000"), 2026001, true));
-        assetInvestmentRepository.save(new AssetInvestment(emp, petr,
+        assetInvestmentRepository.save(new AssetInvestment(emp2, petr,
                 "Refinancování - Americká",
                 new BigDecimal("2100000.00"), new BigDecimal("1950000.00"),
                 new BigDecimal("4.99000"), 2026003, true));
 
+        // === LIABILITY INVESTMENT ===
         liabilityInvestmentRepository.save(new LiabilityInvestment(
                 new BigDecimal("15420.50"), "Úrok - Běžný účet č.1",
                 0, new BigDecimal("0.01000"), true, new BigDecimal("1.54"), ucet1));
@@ -122,6 +171,7 @@ public class BootstrapData implements CommandLineRunner {
                 new BigDecimal("85600.20"), "Úrok - Běžný účet č.4",
                 0, new BigDecimal("0.01000"), true, new BigDecimal("8.56"), ucet4));
 
+        // === PŘEVODY ===
         moneyTransferRepository.save(new MoneyTransfer(null, null, ucet1, ucet4, null, null,
                 new BigDecimal("1500.00"), LocalDateTime.of(2026, 4, 1, 10, 30), 1002026, null));
         moneyTransferRepository.save(new MoneyTransfer(null, null, ucet4, ucet1, null, null,
@@ -130,6 +180,9 @@ public class BootstrapData implements CommandLineRunner {
                 new BigDecimal("5000.00"), LocalDateTime.of(2026, 4, 3, 9, 0), 3026442, null));
 
         System.out.println("=== BootstrapData: databáze naplněna ===");
-        System.out.println("=== Přihlášení: RČ 9255209876, heslo test123 ===");
+        System.out.println("=== Klient:      RČ 9255209876, heslo test123 (Alena) ===");
+        System.out.println("=== Zaměstnanec: RČ 8801101122, heslo test123 (Marek - manažer) ===");
+        System.out.println("=== Zaměstnanec: RČ 9205124455, heslo test123 (Lucie) ===");
+        System.out.println("=== Zaměstnanec: RČ 7508209988, heslo test123 (Jakub) ===");
     }
 }

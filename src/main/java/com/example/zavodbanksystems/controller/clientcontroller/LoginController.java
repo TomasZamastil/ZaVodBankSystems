@@ -1,5 +1,6 @@
 package com.example.zavodbanksystems.controller.clientcontroller;
 
+import com.example.zavodbanksystems.databasemodel.AccountType;
 import com.example.zavodbanksystems.databasemodel.Client;
 import com.example.zavodbanksystems.repos.ClientRepository;
 import com.example.zavodbanksystems.repos.EmployeeRepository;
@@ -54,9 +55,19 @@ public class LoginController {
         session.setAttribute("clientId", client.getIdClient());
         session.setAttribute("clientName", client.getName());
 
+        // Je zaměstnanec?
         boolean isEmployee = employeeRepository.findAll().stream()
                 .anyMatch(e -> e.getClient().getIdClient().equals(client.getIdClient()));
         session.setAttribute("isEmployee", isEmployee);
+
+        // Je manažer? = má přístup k internímu účtu (AccountType = INTERNAL)
+        boolean isManager = false;
+        if (isEmployee) {
+            isManager = client.getAccounts().stream()
+                    .anyMatch(a -> a.getAccountType().getAccountTypeName()
+                            .equals(AccountType.Type.INTERNAL.name()));
+        }
+        session.setAttribute("isManager", isManager);
 
         return "redirect:/dashboard";
     }

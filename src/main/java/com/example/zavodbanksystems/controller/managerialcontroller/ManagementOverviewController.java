@@ -21,7 +21,7 @@ public class ManagementOverviewController {
 
     @GetMapping("/managementOverview")
     public String managementOverview(HttpSession session, Model model) {
-        if (session.getAttribute("clientId") == null) return "redirect:/login";
+        if (!Boolean.TRUE.equals(session.getAttribute("isManager"))) return "redirect:/dashboard";
 
         List<MoneyTransfer> recentTransfers = moneyTransferRepository.findAll().stream()
                 .sorted(Comparator.comparing(MoneyTransfer::getTransferDate).reversed())
@@ -32,6 +32,8 @@ public class ManagementOverviewController {
         model.addAttribute("accountCount", accountRepository.count());
         model.addAttribute("employeeCount", employeeRepository.count());
         model.addAttribute("recentTransfers", recentTransfers);
+        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "manager/managementOverview";
     }
 }

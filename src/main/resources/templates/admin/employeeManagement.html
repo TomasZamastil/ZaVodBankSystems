@@ -22,6 +22,10 @@
     <a href="/accountManagement" class="nav-link">Správa účtů</a>
     <a href="/employeeManagement" class="nav-link active">Správa zaměstnanců</a>
     <a href="/salaryManagement" class="nav-link">Mzdy</a>
+    <div th:if="${isManager}">
+        <span class="nav-sec">Management</span>
+        <a href="/managementOverview" class="nav-link">Přehled managementu</a>
+    </div>
     <div class="nav-bottom">
         <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
         <a href="/logout" class="nav-link">Odhlásit se</a>
