@@ -29,6 +29,7 @@ public class DashboardController {
         model.addAttribute("client", client);
         model.addAttribute("accounts", client.getAccounts());
         model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "client/dashboard";
     }
 }

@@ -41,7 +41,7 @@ public class MoneyTransfer {
     @Column(name = "transfer_date", nullable = false)
     private LocalDateTime transferDate;
 
-    @Column(name = "variable_symbol", nullable = false)
+    @Column(name = "variable_symbol")
     private Integer variableSymbol;
 
     @Column(name = "outside_token_coms", columnDefinition = "JSON")

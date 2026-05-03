@@ -1,13 +1,12 @@
 package com.example.zavodbanksystems.controller.clientcontroller;
 
 import com.example.zavodbanksystems.databasemodel.Account;
-import com.example.zavodbanksystems.databasemodel.Client;
 import com.example.zavodbanksystems.databasemodel.MoneyTransfer;
 import com.example.zavodbanksystems.repos.AccountRepository;
-import com.example.zavodbanksystems.repos.ClientRepository;
 import com.example.zavodbanksystems.repos.MoneyTransferRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -17,85 +16,130 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 @Controller
 public class TransferController {
 
-    @Autowired private ClientRepository clientRepository;
     @Autowired private AccountRepository accountRepository;
     @Autowired private MoneyTransferRepository moneyTransferRepository;
 
     @GetMapping("/transfer")
     @Transactional
-    public String transfer(HttpSession session, Model model) {
+    public String transfer(@RequestParam Integer sourceAccountId,
+                           HttpSession session, Model model) {
         Integer clientId = (Integer) session.getAttribute("clientId");
         if (clientId == null) return "redirect:/login";
 
-        Optional<Client> opt = clientRepository.findById(clientId);
-        if (opt.isEmpty()) return "redirect:/login";
+        Optional<Account> srcOpt = accountRepository.findById(sourceAccountId);
+        if (srcOpt.isEmpty()) return "redirect:/dashboard";
 
-        model.addAttribute("accounts", opt.get().getAccounts());
-        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        Account source = srcOpt.get();
+        boolean isEmployee = Boolean.TRUE.equals(session.getAttribute("isEmployee"));
+        boolean hasAccess = isEmployee || source.getClients().stream()
+                .anyMatch(c -> c.getIdClient().equals(clientId));
+        if (!hasAccess) return "redirect:/dashboard";
+
+        model.addAttribute("sourceAccount", source);
+        model.addAttribute("isEmployee", isEmployee);
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "client/transfer";
     }
 
+    // Bez @Transactional – každý save() má vlastní transakci,
+    // takže při selhání triggeru můžeme ručně rollbacknout zůstatky
     @PostMapping("/transfer")
-    @Transactional
     public String doTransfer(@RequestParam Integer sourceAccountId,
-                             @RequestParam Integer destinationAccountId,
-                             @RequestParam BigDecimal amount,
-                             @RequestParam Integer variableSymbol,
+                             @RequestParam String destinationAccountId,
+                             @RequestParam String amount,
+                             @RequestParam(required = false) String variableSymbol,
                              HttpSession session, Model model) {
         Integer clientId = (Integer) session.getAttribute("clientId");
         if (clientId == null) return "redirect:/login";
 
-        Optional<Client> clientOpt = clientRepository.findById(clientId);
-        if (clientOpt.isEmpty()) return "redirect:/login";
-
-        Set<Account> accounts = clientOpt.get().getAccounts();
-
-        boolean ownsSource = accounts.stream()
-                .anyMatch(a -> a.getIdAccount().equals(sourceAccountId));
-        if (!ownsSource) {
-            model.addAttribute("error", "Nemáte oprávnění k tomuto účtu.");
-            model.addAttribute("accounts", accounts);
-        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
-            return "client/transfer";
-        }
-
         Optional<Account> srcOpt = accountRepository.findById(sourceAccountId);
-        Optional<Account> dstOpt = accountRepository.findById(destinationAccountId);
-
-        if (srcOpt.isEmpty() || dstOpt.isEmpty()) {
-            model.addAttribute("error", "Cílový účet nenalezen.");
-            model.addAttribute("accounts", accounts);
-        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
-            return "client/transfer";
-        }
+        if (srcOpt.isEmpty()) return "redirect:/dashboard";
 
         Account src = srcOpt.get();
-        Account dst = dstOpt.get();
 
-        if (src.getBalance().compareTo(amount) < 0) {
-            model.addAttribute("error", "Nedostatek prostředků na účtu.");
-            model.addAttribute("accounts", accounts);
-        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        // Parsování vstupů
+        Integer dstId;
+        BigDecimal amountVal;
+        Integer vsym;
+        try {
+            dstId = Integer.parseInt(destinationAccountId.trim());
+            amountVal = new BigDecimal(amount.trim().replace(",", "."));
+            vsym = (variableSymbol != null && !variableSymbol.isBlank())
+                    ? Integer.parseInt(variableSymbol.trim()) : 0;
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Neplatný formát zadaných hodnot.");
+            model.addAttribute("sourceAccount", accountRepository.findById(sourceAccountId).orElse(src));
+            model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+            model.addAttribute("isManager", session.getAttribute("isManager"));
             return "client/transfer";
         }
 
-        src.setBalance(src.getBalance().subtract(amount));
-        dst.setBalance(dst.getBalance().add(amount));
+        // Kontrola zůstatku
+        if (src.getBalance().compareTo(amountVal) < 0) {
+            model.addAttribute("error", "Nedostatek prostředků na účtu.");
+            model.addAttribute("sourceAccount", src);
+            model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+            model.addAttribute("isManager", session.getAttribute("isManager"));
+            return "client/transfer";
+        }
+
+        Optional<Account> dstOpt = accountRepository.findById(dstId);
+        if (dstOpt.isEmpty()) {
+            model.addAttribute("error", "Cílový účet neexistuje nebo není aktivní.");
+            model.addAttribute("sourceAccount", src);
+            model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+            model.addAttribute("isManager", session.getAttribute("isManager"));
+            return "client/transfer";
+        }
+
+        Account dst = dstOpt.get();
+
+        // Odečti a přičti zůstatky
+        src.setBalance(src.getBalance().subtract(amountVal));
+        dst.setBalance(dst.getBalance().add(amountVal));
         accountRepository.save(src);
         accountRepository.save(dst);
 
-        moneyTransferRepository.save(new MoneyTransfer(
-                null, null, src, dst, null, null,
-                amount, LocalDateTime.now(), variableSymbol, null));
+        try {
+            // Triggery se spustí zde:
+            // trg_check_recipient_exists – ověří aktivitu cílového účtu
+            // trg_validate_asset_repayment_amount – ověří výši splátky úvěru
+            moneyTransferRepository.save(new MoneyTransfer(
+                    null, null, src, dst, null, null,
+                    amountVal, LocalDateTime.now(), vsym, null));
 
-        model.addAttribute("success", "Převod proběhl úspěšně.");
-        model.addAttribute("accounts", clientOpt.get().getAccounts());
-        model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
-        return "client/transfer";
+        } catch (DataIntegrityViolationException e) {
+            // Trigger selhal – ručně rollbackni zůstatky
+            src.setBalance(src.getBalance().add(amountVal));
+            dst.setBalance(dst.getBalance().subtract(amountVal));
+            accountRepository.save(src);
+            accountRepository.save(dst);
+
+            model.addAttribute("error", extractTriggerMessage(e));
+            model.addAttribute("sourceAccount", accountRepository.findById(sourceAccountId).orElse(src));
+            model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+            model.addAttribute("isManager", session.getAttribute("isManager"));
+            return "client/transfer";
+        }
+
+        return "redirect:/account/" + sourceAccountId + "?success=transfer";
+    }
+
+    private String extractTriggerMessage(DataIntegrityViolationException e) {
+        Throwable cause = e.getCause();
+        while (cause != null) {
+            String msg = cause.getMessage();
+            if (msg != null && (msg.contains("neexistuje")
+                    || msg.contains("neodpovídá")
+                    || msg.contains("není aktivní"))) {
+                return msg;
+            }
+            cause = cause.getCause();
+        }
+        return "Převod se nezdařil. Zkontrolujte zadané údaje.";
     }
 }

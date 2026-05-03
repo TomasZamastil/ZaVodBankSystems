@@ -18,6 +18,7 @@ public class ProfileController {
         if (clientId == null) return "redirect:/login";
         clientRepository.findById(clientId).ifPresent(c -> model.addAttribute("client", c));
         model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "client/profile";
     }
 }

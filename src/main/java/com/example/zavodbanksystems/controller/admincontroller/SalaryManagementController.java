@@ -26,6 +26,7 @@ public class SalaryManagementController {
         if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         model.addAttribute("salaries", salaryRepository.findAll());
         model.addAttribute("employees", employeeRepository.findAll());
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "admin/salaryManagement";
     }
 
@@ -33,12 +34,13 @@ public class SalaryManagementController {
     public String createSalary(@RequestParam Integer employeeId,
                                @RequestParam BigDecimal amount,
                                @RequestParam String payday,
+                               @RequestParam Boolean paid,
                                HttpSession session, Model model) {
         if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
 
         Optional<Employee> empOpt = employeeRepository.findById(employeeId);
         if (empOpt.isPresent()) {
-            salaryRepository.save(new Salary(empOpt.get(), amount, LocalDateTime.parse(payday)));
+            salaryRepository.save(new Salary(empOpt.get(), amount, LocalDateTime.parse(payday), paid));
             model.addAttribute("success", "Mzda byla úspěšně zaznamenána.");
         } else {
             model.addAttribute("error", "Zaměstnanec nenalezen.");
@@ -46,6 +48,7 @@ public class SalaryManagementController {
 
         model.addAttribute("salaries", salaryRepository.findAll());
         model.addAttribute("employees", employeeRepository.findAll());
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "admin/salaryManagement";
     }
 }

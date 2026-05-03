@@ -16,6 +16,7 @@ public class ClientOverviewController {
     public String clientOverview(HttpSession session, Model model) {
         if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
         model.addAttribute("clients", clientRepository.findAll());
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "admin/clientOverview";
     }
 }

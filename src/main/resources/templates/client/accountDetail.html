@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZaVod Bank – Detail účtu</title>
+    <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
+</head>
+<body>
+<nav>
+    <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
+    <span class="nav-sec">Klient</span>
+    <a href="/dashboard" class="nav-link">Přehled účtů</a>
+    <a href="/profile" class="nav-link">Profil</a>
+    <div th:if="${isEmployee}">
+        <span class="nav-sec">Zaměstnanec</span>
+        <a href="/clientOverview" class="nav-link">Klienti</a>
+        <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
+        <a href="/clientCreation" class="nav-link">Nový klient</a>
+        <a href="/accountManagement" class="nav-link">Správa účtů</a>
+        <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
+        <a href="/salaryManagement" class="nav-link">Mzdy</a>
+    </div>
+    <div th:if="${isManager}">
+        <span class="nav-sec">Management</span>
+        <a href="/managementOverview" class="nav-link">Přehled managementu</a>
+    </div>
+    <div class="nav-bottom"><a href="/logout" class="nav-link">Odhlásit se</a></div>
+</nav>
+<main>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.3rem;">
+        <a href="/dashboard" class="btn" style="padding:0.4rem 0.8rem;font-size:0.82rem;">← Zpět</a>
+        <h1 th:text="'Účet č. ' + ${account.idAccount}">Účet</h1>
+        <span class="badge" th:classappend="${account.activeStatus} ? 'badge-on' : 'badge-off'"
+              th:text="${account.activeStatus} ? 'Aktivní' : 'Neaktivní'">Stav</span>
+    </div>
+    <p class="sub" th:text="${account.accountType.accountTypeName}">Typ účtu</p>
+
+    <div class="alert alert-ok" th:if="${successMsg}" th:text="${successMsg}"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div class="card">
+            <div class="card-title">Informace o účtu</div>
+            <div class="row"><span class="lbl">Zůstatek</span>
+                <span class="val" th:text="${#numbers.formatDecimal(account.balance,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</span></div>
+            <div class="row"><span class="lbl">Úroková sazba</span>
+                <span class="val" th:text="${account.interest} + ' %'">0 %</span></div>
+            <div class="row"><span class="lbl">Typ</span>
+                <span class="val" th:text="${account.accountType.accountTypeName}">–</span></div>
+            <div class="row" style="border-bottom:none;">
+                <span class="lbl">Majitelé</span>
+                <span class="val">
+                    <span th:each="c, i : ${account.clients}"
+                          th:text="${c.name} + (${i.last} ? '' : ', ')">–</span>
+                </span>
+            </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+            <a th:href="@{/transfer(sourceAccountId=${account.idAccount})}"
+               class="btn"
+               th:if="${account.activeStatus}"
+               style="display:block;text-align:center;">Nový převod</a>
+
+            <div th:if="${isEmployee}" class="card">
+                <div class="card-title">Akce zaměstnance</div>
+                <form th:action="@{/account/{id}/deposit(id=${account.idAccount})}" method="post"
+                      style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+                    <input type="text" name="amount" placeholder="Částka vkladu (Kč)"
+                           style="flex:1;" pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte číslo"/>
+                    <button type="submit" class="btn">Vložit</button>
+                </form>
+                <form th:action="@{/account/{id}/addOwner(id=${account.idAccount})}" method="post"
+                      style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+                    <select name="clientId" style="flex:1;">
+                        <option th:each="c : ${allClients}" th:value="${c.idClient}" th:text="${c.name}"></option>
+                    </select>
+                    <button type="submit" class="btn">Přidat majitele</button>
+                </form>
+                <form th:action="@{/account/{id}/deactivate(id=${account.idAccount})}" method="post">
+                    <button type="submit" class="btn"
+                            th:text="${account.activeStatus} ? 'Deaktivovat účet' : 'Aktivovat účet'"
+                            style="background:var(--red);color:white;width:100%;">Deaktivovat</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h2>Historie převodů</h2>
+    <table th:if="${not #lists.isEmpty(transfers)}" style="margin-top:1rem;">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Směr</th>
+                <th>Protistrana (účet)</th>
+                <th>Variabilní symbol</th>
+                <th>Částka</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="t : ${transfers}">
+                <td th:text="${#temporals.format(t.transferDate,'dd.MM.yyyy HH:mm')}">datum</td>
+                <td>
+                    <span th:if="${t.sourceAccount.idAccount == account.idAccount}"
+                          style="color:var(--red);">↑ Odchozí</span>
+                    <span th:if="${t.destinationAccount.idAccount == account.idAccount}"
+                          style="color:var(--green);">↓ Příchozí</span>
+                </td>
+                <td th:text="${t.sourceAccount.idAccount == account.idAccount}
+                    ? 'č. ' + ${t.destinationAccount.idAccount}
+                    : 'č. ' + ${t.sourceAccount.idAccount}">–</td>
+                <td th:text="${t.variableSymbol}">–</td>
+                <td th:text="${#numbers.formatDecimal(t.amount,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="empty" th:if="${#lists.isEmpty(transfers)}">
+        <h3>Žádné transakce</h3>
+        <p>Na tomto účtu zatím neproběhly žádné převody.</p>
+    </div>
+</main>
+</body>
+</html>

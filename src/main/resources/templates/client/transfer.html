@@ -4,16 +4,12 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZaVod Bank – Nový převod</title>
     <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
-
 </head>
 <body>
 <nav>
     <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
     <span class="nav-sec">Klient</span>
     <a href="/dashboard" class="nav-link">Přehled účtů</a>
-    <a href="/transfer" class="nav-link active">Nový převod</a>
-    <a href="/transferHistory" class="nav-link">Historie převodů</a>
-    <a href="/inAppLoan" class="nav-link">Moje úvěry</a>
     <a href="/profile" class="nav-link">Profil</a>
     <div th:if="${isEmployee}">
         <span class="nav-sec">Zaměstnanec</span>
@@ -31,32 +27,34 @@
     <div class="nav-bottom"><a href="/logout" class="nav-link">Odhlásit se</a></div>
 </nav>
 <main>
-    <h1>Nový převod</h1>
-    <p class="sub">Odeslat peníze na jiný účet</p>
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.3rem;">
+        <a th:href="@{/account/{id}(id=${sourceAccount.idAccount})}"
+           class="btn" style="padding:0.4rem 0.8rem;font-size:0.82rem;">← Zpět</a>
+        <h1>Nový převod</h1>
+    </div>
+    <p class="sub" th:text="'Z: ' + ${sourceAccount.accountType.accountTypeName} + ' č.' + ${sourceAccount.idAccount} + '  —  Zůstatek: ' + ${#numbers.formatDecimal(sourceAccount.balance,1,'COMMA',2,'POINT')} + ' Kč'">Z účtu</p>
+
     <div class="alert alert-err" th:if="${error}" th:text="${error}"></div>
-    <div class="alert alert-ok" th:if="${success}" th:text="${success}"></div>
-    <div class="card">
+
+    <div class="card" style="max-width:480px;">
         <form th:action="@{/transfer}" method="post">
-            <div class="form-group">
-                <label>Z účtu</label>
-                <select name="sourceAccountId" required>
-                    <option th:each="a : ${accounts}" th:value="${a.idAccount}"
-                            th:text="${a.accountType.accountTypeName} + ' č.' + ${a.idAccount} + ' – ' + ${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')} + ' Kč'"></option>
-                </select>
-            </div>
+            <input type="hidden" name="sourceAccountId" th:value="${sourceAccount.idAccount}"/>
             <div class="form-group">
                 <label>Číslo cílového účtu</label>
-                <input type="number" name="destinationAccountId" placeholder="např. 5" required min="1"/>
+                <input type="text" name="destinationAccountId" placeholder="např. 5" required
+                       pattern="[0-9]+" title="Zadejte číslo účtu"/>
             </div>
             <div class="form-group">
                 <label>Částka (Kč)</label>
-                <input type="number" name="amount" placeholder="např. 1000.00" required min="0.01" step="0.01"/>
+                <input type="text" name="amount" placeholder="např. 1000.00" required
+                       pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte částku"/>
             </div>
             <div class="form-group">
                 <label>Variabilní symbol</label>
-                <input type="number" name="variableSymbol" placeholder="např. 1234567" required/>
+                <input type="text" name="variableSymbol" placeholder="např. 1234567"
+                       pattern="[0-9]+" title="Zadejte variabilní symbol"/>
             </div>
-            <button type="submit" class="btn">Odeslat převod</button>
+            <button type="submit" class="btn btn-full">Odeslat převod</button>
         </form>
     </div>
 </main>

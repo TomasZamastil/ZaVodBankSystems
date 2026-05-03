@@ -144,11 +144,11 @@ public class BootstrapData implements CommandLineRunner {
 
         // === MZDY ===
         salaryRepository.save(new Salary(emp1, new BigDecimal("65000.00"),
-                LocalDateTime.of(2026, 4, 1, 8, 0)));
+                LocalDateTime.of(2026, 5, 15, 8, 0), false));
         salaryRepository.save(new Salary(emp2, new BigDecimal("42000.00"),
-                LocalDateTime.of(2026, 4, 1, 8, 0)));
+                LocalDateTime.of(2026, 5, 15, 8, 0), false));
         salaryRepository.save(new Salary(emp3, new BigDecimal("35000.00"),
-                LocalDateTime.of(2026, 4, 1, 8, 0)));
+                LocalDateTime.of(2026, 5, 15, 8, 0), false));
 
         // === ASSET INVESTMENT ===
         assetInvestmentRepository.save(new AssetInvestment(emp1, alena,

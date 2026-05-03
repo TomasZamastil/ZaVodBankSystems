@@ -10,9 +10,6 @@
     <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
     <span class="nav-sec">Klient</span>
     <a href="/dashboard" class="nav-link">Přehled účtů</a>
-    <a href="/transfer" class="nav-link">Nový převod</a>
-    <a href="/transferHistory" class="nav-link">Historie převodů</a>
-    <a href="/inAppLoan" class="nav-link">Moje úvěry</a>
     <a href="/profile" class="nav-link">Profil</a>
     <span class="nav-sec">Zaměstnanec</span>
     <a href="/clientOverview" class="nav-link">Klienti</a>
@@ -25,14 +22,11 @@
         <span class="nav-sec">Management</span>
         <a href="/managementOverview" class="nav-link">Přehled managementu</a>
     </div>
-    <div class="nav-bottom">
-        <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
-        <a href="/logout" class="nav-link">Odhlásit se</a>
-    </div>
+    <div class="nav-bottom"><a href="/logout" class="nav-link">Odhlásit se</a></div>
 </nav>
 <main>
     <h1>Správa účtů</h1>
-    <p class="sub">Přehled všech účtů a vytvoření nového</p>
+    <p class="sub">Přehled všech účtů – kliknutím na účet přejdete na detail</p>
     <div class="alert alert-err" th:if="${error}" th:text="${error}"></div>
     <div class="alert alert-ok" th:if="${success}" th:text="${success}"></div>
 
@@ -40,15 +34,7 @@
         <div>
             <table>
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Typ</th>
-                        <th>Zůstatek</th>
-                        <th>Úrok</th>
-                        <th>Stav</th>
-                        <th>Majitelé</th>
-                        <th>Vklad</th>
-                    </tr>
+                    <tr><th>ID</th><th>Typ</th><th>Zůstatek</th><th>Úrok</th><th>Stav</th><th>Majitelé</th><th></th></tr>
                 </thead>
                 <tbody>
                     <tr th:each="a : ${accounts}">
@@ -56,23 +42,12 @@
                         <td th:text="${a.accountType.accountTypeName}">Typ</td>
                         <td th:text="${#numbers.formatDecimal(a.balance,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
                         <td th:text="${a.interest} + ' %'">0 %</td>
-                        <td>
-                            <span class="badge"
-                                  th:classappend="${a.activeStatus} ? 'badge-on' : 'badge-off'"
-                                  th:text="${a.activeStatus} ? 'Aktivní' : 'Neaktivní'">Stav</span>
-                        </td>
-                        <td>
-                            <span th:each="c, iter : ${a.clients}"
-                                  th:text="${c.name} + (${iter.last} ? '' : ', ')">–</span>
-                        </td>
-                        <td>
-                            <form th:action="@{/accountDeposit}" method="post" style="display:flex;gap:0.4rem;">
-                                <input type="hidden" name="accountId" th:value="${a.idAccount}"/>
-                                <input type="number" name="amount" placeholder="Kč" min="0.01" step="0.01"
-                                       style="width:90px;padding:0.35rem 0.5rem;font-size:0.82rem;"/>
-                                <button type="submit" class="btn" style="padding:0.35rem 0.7rem;font-size:0.82rem;">Vložit</button>
-                            </form>
-                        </td>
+                        <td><span class="badge" th:classappend="${a.activeStatus} ? 'badge-on' : 'badge-off'"
+                                  th:text="${a.activeStatus} ? 'Aktivní' : 'Neaktivní'">Stav</span></td>
+                        <td><span th:each="c, iter : ${a.clients}"
+                                  th:text="${c.name} + (${iter.last} ? '' : ', ')">–</span></td>
+                        <td><a th:href="@{/account/{id}(id=${a.idAccount})}" class="btn"
+                               style="padding:0.35rem 0.7rem;font-size:0.82rem;">Detail</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -84,16 +59,14 @@
                 <div class="form-group">
                     <label>Typ účtu</label>
                     <select name="accountTypeId" required>
-                        <option th:each="t : ${accountTypes}"
-                                th:value="${t.idAccountType}"
+                        <option th:each="t : ${accountTypes}" th:value="${t.idAccountType}"
                                 th:text="${t.accountTypeName}"></option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Přiřadit klientovi</label>
                     <select name="clientId" required>
-                        <option th:each="c : ${clients}"
-                                th:value="${c.idClient}"
+                        <option th:each="c : ${clients}" th:value="${c.idClient}"
                                 th:text="${c.name} + ' (' + ${c.socialSecurityIco} + ')'"></option>
                     </select>
                 </div>

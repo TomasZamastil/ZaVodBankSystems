@@ -4,16 +4,18 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZaVod Bank – Přehled</title>
     <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
-
+    <style>
+        .acc-card { cursor:pointer; transition: border-color 0.2s, transform 0.15s; }
+        .acc-card:hover { border-color: rgba(201,168,76,0.5); transform: translateY(-2px); }
+        .acc-card a.card-link { position:absolute; inset:0; border-radius:12px; }
+        .acc-card { position:relative; }
+    </style>
 </head>
 <body>
 <nav>
     <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
     <span class="nav-sec">Klient</span>
     <a href="/dashboard" class="nav-link active">Přehled účtů</a>
-    <a href="/transfer" class="nav-link">Nový převod</a>
-    <a href="/transferHistory" class="nav-link">Historie převodů</a>
-    <a href="/inAppLoan" class="nav-link">Moje úvěry</a>
     <a href="/profile" class="nav-link">Profil</a>
     <div th:if="${isEmployee}">
         <span class="nav-sec">Zaměstnanec</span>
@@ -36,6 +38,7 @@
 
     <div class="grid" th:if="${not #lists.isEmpty(accounts)}">
         <div class="acc-card" th:each="a : ${accounts}">
+            <a th:href="@{/account/{id}(id=${a.idAccount})}" class="card-link" aria-label="Detail účtu"></a>
             <div class="acc-header">
                 <span class="acc-type" th:text="${a.accountType.accountTypeName}">Typ</span>
                 <span class="badge" th:classappend="${a.activeStatus} ? 'badge-on' : 'badge-off'"
@@ -46,7 +49,6 @@
             <div class="acc-id" th:text="'Účet č. ' + ${a.idAccount}">Účet č. 1</div>
             <div class="acc-foot">
                 <span th:text="'Úrok: ' + ${a.interest} + ' %'">0 %</span>
-                <a th:href="@{/transfer}" class="btn">Převést</a>
             </div>
         </div>
     </div>

@@ -38,6 +38,7 @@ public class InAppLoanController {
         model.addAttribute("loans", loans);
         model.addAttribute("accounts", client.getAccounts());
         model.addAttribute("isEmployee", session.getAttribute("isEmployee"));
+        model.addAttribute("isManager", session.getAttribute("isManager"));
         return "client/inAppLoan";
     }
 }

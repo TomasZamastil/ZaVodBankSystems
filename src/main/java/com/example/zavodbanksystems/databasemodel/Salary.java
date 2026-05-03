@@ -1,10 +1,9 @@
 package com.example.zavodbanksystems.databasemodel;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
+
 @Entity
 @Table(name = "Salary")
 public class Salary {
@@ -24,43 +23,26 @@ public class Salary {
     @Column(name = "payday", nullable = false)
     private LocalDateTime payday;
 
+    @Column(name = "paid", nullable = false)
+    private Boolean paid;
+
     public Salary() {}
 
-    public Salary(Employee employee, BigDecimal amount, LocalDateTime payday) {
+    public Salary(Employee employee, BigDecimal amount, LocalDateTime payday, Boolean paid) {
         this.employee = employee;
         this.amount = amount;
         this.payday = payday;
+        this.paid = paid;
     }
 
-    public Integer getIdSalary() {
-        return idSalary;
-    }
-
-    public void setIdSalary(Integer idSalary) {
-        this.idSalary = idSalary;
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public LocalDateTime getPayday() {
-        return payday;
-    }
-
-    public void setPayday(LocalDateTime payday) {
-        this.payday = payday;
-    }
+    public Integer getIdSalary() { return idSalary; }
+    public void setIdSalary(Integer idSalary) { this.idSalary = idSalary; }
+    public Employee getEmployee() { return employee; }
+    public void setEmployee(Employee employee) { this.employee = employee; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public LocalDateTime getPayday() { return payday; }
+    public void setPayday(LocalDateTime payday) { this.payday = payday; }
+    public Boolean getPaid() { return paid; }
+    public void setPaid(Boolean paid) { this.paid = paid; }
 }
