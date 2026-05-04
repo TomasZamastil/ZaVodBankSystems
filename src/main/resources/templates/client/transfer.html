@@ -5,15 +5,11 @@
     <title>ZaVod Bank – Nový převod</title>
     <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
     <style>
-        .bank-fields { display:none; margin-top:0.75rem; padding-top:0.75rem;
-                       border-top:1px solid var(--border); }
-        .bank-fields.visible { display:block; }
-        .transfer-hint { font-size:0.8rem; color:var(--muted); margin-top:0.3rem; }
         .test-accounts { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2);
-                         border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.82rem; }
+            border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.82rem; }
         .test-accounts summary { color:var(--gold); cursor:pointer; font-weight:600; }
         .test-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem;
-                     margin-top:0.5rem; color:var(--muted); }
+            margin-top:0.5rem; color:var(--muted); }
         .test-grid div { line-height:1.6; }
         .test-grid strong { color:var(--off-white); display:block; }
     </style>
@@ -30,7 +26,7 @@
         <a href="/clientOverview" class="nav-link">Klienti</a>
         <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
         <a href="/clientCreation" class="nav-link">Nový klient</a>
-    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
+        <a href="/loanCreation" class="nav-link">Nový úvěr</a>
         <a href="/accountManagement" class="nav-link">Správa účtů</a>
         <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
         <a href="/salaryManagement" class="nav-link">Mzdy</a>
@@ -56,8 +52,9 @@
     <div class="alert alert-ok" th:if="${interbank}" th:text="${interbank}"></div>
 
     <div class="card" style="max-width:520px;">
+
         <details class="test-accounts">
-            <summary>Testovací mezibankovní účty</summary>
+            <summary>Testovací účty externích bank</summary>
             <div class="test-grid">
                 <div><strong>Česká spořitelna</strong>1234567890 / 0800<br>Jan Novák</div>
                 <div><strong>ČSOB</strong>9876543210 / 0300<br>Marie Horáková s.r.o.</div>
@@ -69,31 +66,22 @@
             <input type="hidden" name="sourceAccountId" th:value="${sourceAccount.idAccount}"/>
 
             <div class="form-group">
-                <label>Číslo cílového účtu</label>
-                <input type="text" id="destId" name="destinationAccountId"
-                       placeholder="Číslo účtu (interní nebo mezibankovní)" required
-                       oninput="checkIfInterbank(this.value)"/>
-                <div class="transfer-hint" id="transferHint">
-                    Čísla 1–99 jsou interní účty. Delší číslo = mezibankovní převod.
-                </div>
+                <label>Číslo účtu příjemce</label>
+                <input type="text" name="destinationAccountId"
+                       placeholder="např. 3 nebo 1234567890" required/>
             </div>
 
-            <div class="bank-fields" id="bankFields">
-                <div class="form-group">
-                    <label>Kód banky</label>
-                    <input type="text" id="bankCode" name="bankCode"
-                           placeholder="např. 0800" maxlength="4"/>
-                </div>
-                <div class="form-group">
-                    <label>Zpráva pro příjemce</label>
-                    <input type="text" name="bankMessage" placeholder="Volitelná zpráva" maxlength="140"/>
-                </div>
+            <div class="form-group">
+                <label>Kód banky <span style="color:var(--muted);font-weight:400;">(volitelný – náš kód je 1234)</span></label>
+                <input type="text" name="bankCode"
+                       placeholder="prázdné nebo 1234 = interní, jinak mezibankovní"
+                       maxlength="4" pattern="[0-9]{0,4}"/>
             </div>
 
             <div class="form-group">
                 <label>Částka (Kč)</label>
                 <input type="text" name="amount" placeholder="např. 1000.00" required
-                       pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte částku"/>
+                       pattern="[0-9]+([.,][0-9]{1,2})?"/>
             </div>
 
             <div class="form-group">
@@ -102,30 +90,9 @@
                        pattern="[0-9]*"/>
             </div>
 
-            <button type="submit" class="btn btn-full" id="submitBtn">Odeslat převod</button>
+            <button type="submit" class="btn btn-full">Odeslat převod</button>
         </form>
     </div>
 </main>
-<script>
-function checkIfInterbank(value) {
-    const hint = document.getElementById('transferHint');
-    const bankFields = document.getElementById('bankFields');
-    const bankCode = document.getElementById('bankCode');
-    const submitBtn = document.getElementById('submitBtn');
-    const num = value.trim();
-    const isInterbank = num.length > 4;
-    bankFields.classList.toggle('visible', isInterbank);
-    bankCode.required = isInterbank;
-    if (isInterbank) {
-        hint.textContent = 'Mezibankovní převod – zadejte kód banky.';
-        hint.style.color = 'var(--gold)';
-        submitBtn.textContent = 'Odeslat mezibankovní převod';
-    } else {
-        hint.textContent = 'Čísla 1–99 jsou interní účty. Delší číslo = mezibankovní převod.';
-        hint.style.color = '';
-        submitBtn.textContent = 'Odeslat převod';
-    }
-}
-</script>
 </body>
 </html>

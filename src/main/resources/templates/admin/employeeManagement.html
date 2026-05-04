@@ -16,6 +16,7 @@
     <a href="/clientOverview" class="nav-link ">Klienti</a>
     <a href="/employeeOverview" class="nav-link ">Zaměstnanci</a>
     <a href="/clientCreation" class="nav-link ">Nový klient</a>
+    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
     <a href="/accountManagement" class="nav-link ">Správa účtů</a>
     <a href="/employeeManagement" class="nav-link active">Správa zaměstnanců</a>
     <a href="/salaryManagement" class="nav-link ">Mzdy</a>
@@ -41,55 +42,55 @@
 
     <table style="margin-bottom:2rem;">
         <thead>
-            <tr>
-                <th>ID</th><th>Jméno</th><th>Pozice</th>
-                <th>Základní plat</th><th>Bonus</th><th>Provize (z úvěrů)</th>
-                <th>Hrubá mzda</th><th>Nástup</th><th>Akce</th>
-            </tr>
+        <tr>
+            <th>ID</th><th>Jméno</th><th>Pozice</th>
+            <th>Základní plat</th><th>Bonus</th><th>Provize (z úvěrů)</th>
+            <th>Hrubá mzda</th><th>Nástup</th><th>Akce</th>
+        </tr>
         </thead>
         <tbody>
-            <tr th:each="e : ${employees}">
-                <td th:text="${e.idEmployee}">1</td>
-                <td th:text="${e.client.name}">Jméno</td>
-                <td th:text="${e.position}">Pozice</td>
-                <td th:text="${#numbers.formatDecimal(e.basePay,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
-                <td th:text="${e.bonus != null} ? ${#numbers.formatDecimal(e.bonus,1,'COMMA',2,'POINT')} + ' Kč' : '–'">–</td>
-                <td th:text="${e.commission != null} ? ${#numbers.formatDecimal(e.commission,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">0 Kč</td>
-                <td th:text="${#numbers.formatDecimal(
+        <tr th:each="e : ${employees}">
+            <td th:text="${e.idEmployee}">1</td>
+            <td th:text="${e.client.name}">Jméno</td>
+            <td th:text="${e.position}">Pozice</td>
+            <td th:text="${#numbers.formatDecimal(e.basePay,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
+            <td th:text="${e.bonus != null} ? ${#numbers.formatDecimal(e.bonus,1,'COMMA',2,'POINT')} + ' Kč' : '–'">–</td>
+            <td th:text="${e.commission != null} ? ${#numbers.formatDecimal(e.commission,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">0 Kč</td>
+            <td th:text="${#numbers.formatDecimal(
                     e.basePay.add(e.bonus != null ? e.bonus : T(java.math.BigDecimal).ZERO)
                               .add(e.commission != null ? e.commission : T(java.math.BigDecimal).ZERO),
                     1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
-                <td th:text="${#temporals.format(e.hireDate,'dd.MM.yyyy')}">datum</td>
-                <td style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-                    <form th:action="@{/employeeManagement/disburse}" method="post" style="margin:0;">
-                        <input type="hidden" name="employeeId" th:value="${e.idEmployee}"/>
-                        <button type="submit" class="btn"
-                                style="padding:0.35rem 0.7rem;font-size:0.8rem;"
-                                th:disabled="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)}"
-                                th:style="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)} ? 'padding:0.35rem 0.7rem;font-size:0.8rem;opacity:0.5;cursor:not-allowed;' : 'padding:0.35rem 0.7rem;font-size:0.8rem;'"
-                                th:text="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)} ? '✓ Vypočteno' : 'Vypočítat výplatu'">
-                            Vypočítat výplatu
-                        </button>
-                    </form>
-                    <button class="btn" onclick="togglePayForm(this)"
-                            style="padding:0.35rem 0.7rem;font-size:0.8rem;background:var(--navy-mid);color:var(--off-white);">
-                        Změnit plat
+            <td th:text="${#temporals.format(e.hireDate,'dd.MM.yyyy')}">datum</td>
+            <td style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <form th:action="@{/employeeManagement/disburse}" method="post" style="margin:0;">
+                    <input type="hidden" name="employeeId" th:value="${e.idEmployee}"/>
+                    <button type="submit" class="btn"
+                            style="padding:0.35rem 0.7rem;font-size:0.8rem;"
+                            th:disabled="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)}"
+                            th:style="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)} ? 'padding:0.35rem 0.7rem;font-size:0.8rem;opacity:0.5;cursor:not-allowed;' : 'padding:0.35rem 0.7rem;font-size:0.8rem;'"
+                            th:text="${calculatedThisMonth != null and #lists.contains(calculatedThisMonth, e.idEmployee)} ? '✓ Vypočteno' : 'Vypočítat výplatu'">
+                        Vypočítat výplatu
                     </button>
-                    <form th:action="@{/employeeManagement/updatePay}" method="post"
-                          style="display:none;width:100%;margin-top:0.5rem;">
-                        <input type="hidden" name="employeeId" th:value="${e.idEmployee}"/>
-                        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-                            <input type="text" name="basePay" th:value="${e.basePay}"
-                                   placeholder="Základní plat" style="width:130px;"
-                                   pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte číslo"/>
-                            <input type="text" name="bonus" th:value="${e.bonus}"
-                                   placeholder="Bonus" style="width:100px;"
-                                   pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte číslo"/>
-                            <button type="submit" class="btn" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Uložit</button>
-                        </div>
-                    </form>
-                </td>
-            </tr>
+                </form>
+                <button class="btn" onclick="togglePayForm(this)"
+                        style="padding:0.35rem 0.7rem;font-size:0.8rem;background:var(--navy-mid);color:var(--off-white);">
+                    Změnit plat
+                </button>
+                <form th:action="@{/employeeManagement/updatePay}" method="post"
+                      style="display:none;width:100%;margin-top:0.5rem;">
+                    <input type="hidden" name="employeeId" th:value="${e.idEmployee}"/>
+                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                        <input type="text" name="basePay" th:value="${e.basePay}"
+                               placeholder="Základní plat" style="width:130px;"
+                               pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte číslo"/>
+                        <input type="text" name="bonus" th:value="${e.bonus}"
+                               placeholder="Bonus" style="width:100px;"
+                               pattern="[0-9]+([.,][0-9]{1,2})?" title="Zadejte číslo"/>
+                        <button type="submit" class="btn" style="padding:0.35rem 0.7rem;font-size:0.8rem;">Uložit</button>
+                    </div>
+                </form>
+            </td>
+        </tr>
         </tbody>
     </table>
 
@@ -135,18 +136,18 @@
     </div>
 </main>
 <script>
-function togglePayForm(btn) {
-    const form = btn.nextElementSibling;
-    const isHidden = form.style.display === 'none' || form.style.display === '';
-    form.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) {
-        // Zformátuj hodnoty na 2 desetinná místa
-        form.querySelectorAll('input[type="text"]').forEach(inp => {
-            const val = parseFloat(inp.value.replace(',', '.'));
-            if (!isNaN(val)) inp.value = val.toFixed(2);
-        });
+    function togglePayForm(btn) {
+        const form = btn.nextElementSibling;
+        const isHidden = form.style.display === 'none' || form.style.display === '';
+        form.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            // Zformátuj hodnoty na 2 desetinná místa
+            form.querySelectorAll('input[type="text"]').forEach(inp => {
+                const val = parseFloat(inp.value.replace(',', '.'));
+                if (!isNaN(val)) inp.value = val.toFixed(2);
+            });
+        }
     }
-}
 </script>
 </body>
 </html>

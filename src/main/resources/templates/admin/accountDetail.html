@@ -17,7 +17,7 @@
         <a href="/clientOverview" class="nav-link">Klienti</a>
         <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
         <a href="/clientCreation" class="nav-link">Nový klient</a>
-    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
+        <a href="/loanCreation" class="nav-link">Nový úvěr</a>
         <a href="/accountManagement" class="nav-link">Správa účtů</a>
         <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
         <a href="/salaryManagement" class="nav-link">Mzdy</a>
@@ -61,11 +61,7 @@
             <a th:href="@{/transfer(sourceAccountId=${account.idAccount})}"
                class="btn"
                th:if="${account.activeStatus}"
-               style="display:block;text-align:center;">Převod v rámci ZaVod Bank</a>
-            <a th:href="@{/transfer/outside(sourceAccountId=${account.idAccount})}"
-               class="btn"
-               th:if="${account.activeStatus}"
-               style="display:block;text-align:center;background:var(--navy-mid);color:var(--off-white);margin-top:0.5rem;">Mezibankovní převod</a>
+               style="display:block;text-align:center;">Nový převod</a>
 
             <div th:if="${isEmployee}" class="card">
                 <div class="card-title">Akce zaměstnance</div>
@@ -92,34 +88,37 @@
     </div>
 
     <h2>Historie převodů</h2>
-    <table th:if="${not #lists.isEmpty(transfers)}" style="margin-top:1rem;">
+    <table th:if="${not #lists.isEmpty(transferDisplay)}" style="margin-top:1rem;">
         <thead>
-            <tr>
-                <th>Datum</th>
-                <th>Směr</th>
-                <th>Protistrana (účet)</th>
-                <th>Variabilní symbol</th>
-                <th>Částka</th>
-            </tr>
+        <tr>
+            <th>Datum</th>
+            <th>Směr</th>
+            <th>Protistrana</th>
+            <th>Variabilní symbol</th>
+            <th>Částka</th>
+        </tr>
         </thead>
         <tbody>
-            <tr th:each="t : ${transfers}">
-                <td th:text="${#temporals.format(t.transferDate,'dd.MM.yyyy HH:mm')}">datum</td>
-                <td>
-                    <span th:if="${t.sourceAccount.idAccount == account.idAccount}"
-                          style="color:var(--red);">↑ Odchozí</span>
-                    <span th:if="${t.destinationAccount.idAccount == account.idAccount}"
-                          style="color:var(--green);">↓ Příchozí</span>
-                </td>
-                <td th:text="${t.sourceAccount.idAccount == account.idAccount}
-                    ? 'č. ' + ${t.destinationAccount.idAccount}
-                    : 'č. ' + ${t.sourceAccount.idAccount}">–</td>
-                <td th:text="${t.variableSymbol}">–</td>
-                <td th:text="${#numbers.formatDecimal(t.amount,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
-            </tr>
+        <tr th:each="t : ${transferDisplay}">
+            <td th:text="${t['date'].substring(0,16).replace('T',' ')}">datum</td>
+            <td>
+                <span th:if="${t['direction'] == 'out'}" style="color:var(--red);">↑ Odchozí</span>
+                <span th:if="${t['direction'] == 'in'}" style="color:var(--green);">↓ Příchozí</span>
+            </td>
+            <td>
+                <span th:text="${t['counterparty']}">–</span>
+                <span th:if="${t['interbank'] == 'true'}"
+                      style="font-size:0.75rem;color:var(--muted);margin-left:0.3rem;">[mezibankovní]</span>
+                <span th:if="${t['note'] != null}"
+                      style="font-size:0.75rem;color:var(--muted);margin-left:0.3rem;"
+                      th:text="'[' + ${t['note']} + ']'"></span>
+            </td>
+            <td th:text="${t['variableSymbol']}">–</td>
+            <td th:text="${t['amount']}">0 Kč</td>
+        </tr>
         </tbody>
     </table>
-    <div class="empty" th:if="${#lists.isEmpty(transfers)}">
+    <div class="empty" th:if="${#lists.isEmpty(transferDisplay)}">
         <h3>Žádné transakce</h3>
         <p>Na tomto účtu zatím neproběhly žádné převody.</p>
     </div>

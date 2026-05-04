@@ -32,9 +32,9 @@ public class TransferController {
     @Autowired private MoneyTransferRepository moneyTransferRepository;
 
     private static final Map<String, String[]> TEST_ACCOUNTS = Map.of(
-        "1234567890/0800", new String[]{"Jan Novák", "Česká spořitelna"},
-        "9876543210/0300", new String[]{"Marie Horáková s.r.o.", "ČSOB"},
-        "5555000111/0100", new String[]{"Pavel Dvořák", "Komerční banka"}
+            "1234567890/0800", new String[]{"Jan Novák", "Česká spořitelna"},
+            "9876543210/0300", new String[]{"Marie Horáková s.r.o.", "ČSOB"},
+            "5555000111/0100", new String[]{"Pavel Dvořák", "Komerční banka"}
     );
 
     @GetMapping("/transfer")
@@ -87,7 +87,8 @@ public class TransferController {
             return errorBack(model, src, "Nedostatek prostředků na účtu.", session);
 
         String destTrimmed = destinationAccountId.trim();
-        boolean isInterbank = destTrimmed.length() > 4;
+        String bankCodeTrimmed = (bankCode == null) ? "" : bankCode.trim();
+        boolean isInterbank = !bankCodeTrimmed.isEmpty() && !bankCodeTrimmed.equals("1234");
 
         if (isInterbank) {
             return handleInterbank(src, destTrimmed, bankCode, bankMessage,
@@ -194,19 +195,19 @@ public class TransferController {
 
         try {
             log.info("\n╔══════════════════════════════════════════════╗\n"
-                   + "║   MEZIBANKOVNÍ PŘEVOD – ODESLANÝ JSON        ║\n"
-                   + "╚══════════════════════════════════════════════╝\n{}",
+                            + "║   MEZIBANKOVNÍ PŘEVOD – ODESLANÝ JSON        ║\n"
+                            + "╚══════════════════════════════════════════════╝\n{}",
                     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(outgoing));
             log.info("\n╔══════════════════════════════════════════════╗\n"
-                   + "║   MEZIBANKOVNÍ PŘEVOD – PŘIJATÝ JSON         ║\n"
-                   + "╚══════════════════════════════════════════════╝\n{}",
+                            + "║   MEZIBANKOVNÍ PŘEVOD – PŘIJATÝ JSON         ║\n"
+                            + "╚══════════════════════════════════════════════╝\n{}",
                     mapper.writerWithDefaultPrettyPrinter().writeValueAsString(incoming));
         } catch (Exception ignored) {}
 
         if (!accountExists) {
             return errorBack(model, src,
                     "Mezibankovní převod odmítnut: účet " + targetAccount
-                    + "/" + bankCode + " neexistuje.", session);
+                            + "/" + bankCode + " neexistuje.", session);
         }
 
         src.setBalance(src.getBalance().subtract(amount));
@@ -230,7 +231,7 @@ public class TransferController {
                 accountRepository.findById(sourceAccountId).orElse(src));
         model.addAttribute("interbank",
                 "Mezibankovní převod " + amount + " Kč → "
-                + recipientInfo[0] + " (" + recipientInfo[1] + ") byl přijat.");
+                        + recipientInfo[0] + " (" + recipientInfo[1] + ") byl přijat.");
         model.addAttribute("isEmployee", Boolean.TRUE.equals(session.getAttribute("isEmployee")));
         model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "client/transfer";

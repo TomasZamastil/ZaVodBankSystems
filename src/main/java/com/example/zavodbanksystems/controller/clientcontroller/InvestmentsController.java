@@ -110,7 +110,8 @@ public class InvestmentsController {
             if (!exists) {
                 BigDecimal monthlyInterest = account.getBalance()
                         .multiply(account.getInterest())
-                        .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+                        .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP)
+                        .divide(new BigDecimal("12"), 4, RoundingMode.HALF_UP);
 
                 String periodLabel = YearMonth.now().format(DateTimeFormatter.ofPattern("MM-yyyy"));
                 String uniqueName = "Úrok - " + account.getAccountType().getAccountTypeName()
