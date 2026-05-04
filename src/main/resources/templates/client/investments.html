@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZaVod Bank – Úvěry a závazky</title>
+    <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
+</head>
+<body>
+<nav>
+    <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
+    <span class="nav-sec">Klient</span>
+    <a href="/dashboard" class="nav-link">Přehled účtů</a>
+    <a href="/investments" class="nav-link active">Úvěry a závazky</a>
+    <a href="/profile" class="nav-link">Profil</a>
+    <div th:if="${isEmployee}">
+        <span class="nav-sec">Zaměstnanec</span>
+        <a href="/clientOverview" class="nav-link">Klienti</a>
+        <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
+        <a href="/clientCreation" class="nav-link">Nový klient</a>
+    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
+        <a href="/accountManagement" class="nav-link">Správa účtů</a>
+        <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
+        <a href="/salaryManagement" class="nav-link">Mzdy</a>
+    </div>
+    <div th:if="${isManager}">
+        <span class="nav-sec">Management</span>
+        <a href="/managementOverview" class="nav-link">Přehled managementu</a>
+    </div>
+    <div class="nav-bottom">
+        <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
+        <a href="/logout" class="nav-link">Odhlásit se</a>
+    </div>
+</nav>
+<main>
+    <h1>Úvěry a závazky</h1>
+    <p class="sub" th:text="${isEmployee} ? 'Přehled všech aktivních úvěrů a závazků banky' : 'Vaše aktivní úvěry a závazky'">Přehled</p>
+
+    <div class="alert alert-ok" th:if="${successMsg}" th:text="${successMsg}"></div>
+    <div class="alert alert-err" th:if="${errorMsg}" th:text="${errorMsg}"></div>
+
+    <!-- Akce pro zaměstnance -->
+    <div th:if="${isEmployee}" style="display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;">
+        <form th:action="@{/investments/generateLiabilities}" method="post">
+            <button type="submit" class="btn">Přegenerovat závazky vůči účtům</button>
+        </form>
+        <form th:action="@{/investments/payLiabilities}" method="post">
+            <button type="submit" class="btn"
+                    style="background:var(--green);color:white;">
+                Splatit závazky klientům
+                <span th:if="${totalLiabilities != null}"
+                      th:text="'(' + ${#numbers.formatDecimal(totalLiabilities,1,'COMMA',2,'POINT')} + ' Kč)'"></span>
+            </button>
+        </form>
+    </div>
+
+    <!-- ASSET INVESTMENTS -->
+    <h2 style="margin-bottom:1rem;">
+        Úvěry
+        <span th:if="${isEmployee}" style="font-size:0.8rem;font-weight:400;color:var(--muted);margin-left:0.5rem;">(pohledávky banky)</span>
+    </h2>
+
+    <table th:if="${not #lists.isEmpty(assetInvestments)}" style="margin-bottom:2.5rem;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th th:if="${isEmployee}">Klient</th>
+                <th th:if="${isEmployee}">Správce úvěru</th>
+                <th>Název</th>
+                <th>Původní výše</th>
+                <th>Aktuální zůstatek</th>
+                <th>Úrok</th>
+                <th>Splatnost</th>
+                <th>Měsíční splátka</th>
+                <th>Variabilní symbol</th>
+                <th>Stav</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="ai : ${assetInvestments}">
+                <td th:text="${ai.idAssetInvestment}">–</td>
+                <td th:if="${isEmployee}" th:text="${ai.client.name}">–</td>
+                <td th:if="${isEmployee}" th:text="${ai.employee.client.name}">–</td>
+                <td th:text="${ai.loanName}">–</td>
+                <td th:text="${#numbers.formatDecimal(ai.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(ai.currentBase,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(ai.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
+                <td th:text="${ai.termMonths} + ' měs.'">–</td>
+                <td th:text="${#numbers.formatDecimal(ai.calculateMonthlyPayment(),1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${ai.variableSymbol}">–</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${ai.active} ? 'badge-on' : 'badge-off'"
+                          th:text="${ai.active} ? 'Aktivní' : 'Splacen'">–</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div th:if="${#lists.isEmpty(assetInvestments)}" style="color:var(--muted);margin-bottom:2rem;">Žádné úvěry.</div>
+
+    <!-- LIABILITY INVESTMENTS -->
+    <h2 style="margin-bottom:1rem;">
+        Závazky
+        <span th:if="${isEmployee}" style="font-size:0.8rem;font-weight:400;color:var(--muted);margin-left:0.5rem;">
+            – celkem <span th:text="${#numbers.formatDecimal(totalLiabilities,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</span>
+        </span>
+        <span th:if="${not isEmployee}" style="font-size:0.8rem;font-weight:400;color:var(--muted);margin-left:0.5rem;">(úroky na vašich účtech)</span>
+    </h2>
+
+    <table th:if="${not #lists.isEmpty(liabilityInvestments)}">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th th:if="${isEmployee}">Účet č.</th>
+                <th>Název</th>
+                <th>Základ</th>
+                <th>Měsíční úrok</th>
+                <th>Sazba</th>
+                <th>Stav</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="li : ${liabilityInvestments}">
+                <td th:text="${li.idLiabilityInvestment}">–</td>
+                <td th:if="${isEmployee}">
+                    <a th:if="${li.account != null}"
+                       th:href="@{/account/{id}(id=${li.account.idAccount})}"
+                       th:text="'č. ' + ${li.account.idAccount}">–</a>
+                    <span th:if="${li.account == null}">–</span>
+                </td>
+                <td th:text="${li.loanName}">–</td>
+                <td th:text="${#numbers.formatDecimal(li.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(li.currentBase,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(li.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${li.active} ? 'badge-on' : 'badge-off'"
+                          th:text="${li.active} ? 'Aktivní' : 'Splacen'">–</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div th:if="${#lists.isEmpty(liabilityInvestments)}" style="color:var(--muted);">
+        <span th:if="${isEmployee}">Žádné závazky. Klikněte na "Přegenerovat závazky" pro jejich vytvoření.</span>
+        <span th:if="${not isEmployee}">Na vašich účtech nejsou evidovány žádné závazky.</span>
+    </div>
+</main>
+</body>
+</html>

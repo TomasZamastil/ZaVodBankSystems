@@ -21,7 +21,7 @@ public class ClientCreationController {
     @GetMapping("/clientCreation")
     public String clientCreation(HttpSession session, Model model) {
         if (!Boolean.TRUE.equals(session.getAttribute("isEmployee"))) return "redirect:/dashboard";
-        model.addAttribute("isManager", session.getAttribute("isManager"));
+        model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "admin/clientCreation";
     }
 
@@ -46,7 +46,7 @@ public class ClientCreationController {
         clientRepository.save(client);
 
         model.addAttribute("success", "Klient " + name + " byl úspěšně vytvořen.");
-        model.addAttribute("isManager", session.getAttribute("isManager"));
+        model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "admin/clientCreation";
     }
 }

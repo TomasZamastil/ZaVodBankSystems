@@ -4,32 +4,34 @@
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZaVod Bank – Management</title>
     <link rel="stylesheet" th:href="@{/css/zavod.css}"/>
-
 </head>
 <body>
 <nav>
     <div class="brand"><div class="brand-icon">Z</div><span class="brand-name">ZaVod Bank</span></div>
     <span class="nav-sec">Klient</span>
     <a href="/dashboard" class="nav-link">Přehled účtů</a>
+    <a href="/investments" class="nav-link">Úvěry a závazky</a>
     <a href="/profile" class="nav-link">Profil</a>
     <span class="nav-sec">Zaměstnanec</span>
     <a href="/clientOverview" class="nav-link">Klienti</a>
     <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
     <a href="/clientCreation" class="nav-link">Nový klient</a>
+    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
     <a href="/accountManagement" class="nav-link">Správa účtů</a>
     <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
     <a href="/salaryManagement" class="nav-link">Mzdy</a>
     <span class="nav-sec">Management</span>
     <a href="/managementOverview" class="nav-link active">Přehled managementu</a>
     <div class="nav-bottom">
+        <a href="/dashboard" class="nav-link">Zpět na dashboard</a>
         <a href="/logout" class="nav-link">Odhlásit se</a>
     </div>
 </nav>
 <main>
     <h1>Management Overview</h1>
-    <p class="sub">Souhrn systému ZaVod Bank</p>
+    <p class="sub">Finanční přehled ZaVod Bank</p>
 
-    <div class="stat-grid">
+    <div class="stat-grid" style="margin-bottom:2rem;">
         <div class="stat-card">
             <div class="stat-label">Klientů</div>
             <div class="stat-value" th:text="${clientCount}">0</div>
@@ -42,21 +44,119 @@
             <div class="stat-label">Zaměstnanců</div>
             <div class="stat-value" th:text="${employeeCount}">0</div>
         </div>
+        <div class="stat-card" th:if="${bankBalance != null}">
+            <div class="stat-label">Interní účet</div>
+            <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                 th:text="${#numbers.formatDecimal(bankBalance,1,'COMMA',2,'POINT')} + ' Kč'">–</div>
+        </div>
     </div>
 
-    <h2>Posledních 10 převodů</h2>
-    <table>
-        <thead><tr><th>Datum</th><th>Z účtu</th><th>Na účet</th><th>Částka</th><th>VS</th></tr></thead>
+    <h2 style="margin-bottom:1rem;">Cashflow interního účtu</h2>
+    <div class="stat-grid" style="margin-bottom:2rem;">
+        <div class="stat-card">
+            <div class="stat-label">Celkem přijato</div>
+            <div class="stat-value" style="font-size:1.1rem;color:var(--green);word-break:break-word;"
+                 th:text="${totalIncoming != null} ? ${#numbers.formatDecimal(totalIncoming,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">splátky úvěrů od klientů</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Celkem odesláno</div>
+            <div class="stat-value" style="font-size:1.1rem;color:var(--red);word-break:break-word;"
+                 th:text="${totalOutgoing != null} ? ${#numbers.formatDecimal(totalOutgoing,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">mzdy + úroky klientům</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Z toho: úroky klientům</div>
+            <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                 th:text="${liabilityPayouts != null} ? ${#numbers.formatDecimal(liabilityPayouts,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Z toho: výplaty mezd</div>
+            <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                 th:text="${salaryPayouts != null} ? ${#numbers.formatDecimal(salaryPayouts,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Čistý cashflow</div>
+            <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                 th:style="${netCashFlow != null and netCashFlow.signum() >= 0} ? 'color:var(--green);font-size:1.1rem;word-break:break-word' : 'color:var(--red);font-size:1.1rem;word-break:break-word'"
+                 th:text="${netCashFlow != null} ? ${#numbers.formatDecimal(netCashFlow,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Aktivní závazky vůči klientům</div>
+            <div class="stat-value" style="font-size:1.1rem;color:var(--red);word-break:break-word;"
+                 th:text="${totalActiveLiabilities != null} ? ${#numbers.formatDecimal(totalActiveLiabilities,1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:0.3rem;">nevyplacené úroky na účtech</div>
+        </div>
+    </div>
+
+    <div th:if="${portfolio}" style="margin-bottom:2rem;">
+        <h2 style="margin-bottom:1rem;">Stav portfolia</h2>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Celková aktiva</div>
+                <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                     th:text="${portfolio['total_assets'] != null} ? ${#numbers.formatDecimal(portfolio['total_assets'],1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Celkové závazky</div>
+                <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                     th:text="${portfolio['total_liabilities'] != null} ? ${#numbers.formatDecimal(portfolio['total_liabilities'],1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Celkové vklady klientů</div>
+                <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                     th:text="${portfolio['total_deposits'] != null} ? ${#numbers.formatDecimal(portfolio['total_deposits'],1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Čistá pozice banky</div>
+                <div class="stat-value" style="font-size:1.1rem;word-break:break-word;"
+                     th:text="${portfolio['net_position'] != null} ? ${#numbers.formatDecimal(portfolio['net_position'],1,'COMMA',2,'POINT')} + ' Kč' : '0,00 Kč'">–</div>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom:0.5rem;">Aktivní úvěry – pohledávky banky</h2>
+    <div style="display:flex;gap:2rem;margin-bottom:1rem;font-size:0.9rem;color:var(--muted);">
+        <span>Měsíční příjem ze splátek:
+            <strong style="color:var(--green);"
+                    th:text="${#numbers.formatDecimal(totalMonthlyRepayment,1,'COMMA',2,'POINT')} + ' Kč'">–</strong>
+        </span>
+        <span>Celkový zbývající zisk z úroků:
+            <strong style="color:var(--gold);"
+                    th:text="${#numbers.formatDecimal(totalRemainingProfit,1,'COMMA',2,'POINT')} + ' Kč'">–</strong>
+        </span>
+    </div>
+    <table th:if="${not #lists.isEmpty(loanDetails)}" style="margin-bottom:2rem;">
+        <thead>
+            <tr>
+                <th>Název</th>
+                <th>Klient</th>
+                <th>Jistina</th>
+                <th>Úrok</th>
+                <th>Zbývá měsíců</th>
+                <th>Měsíční splátka</th>
+                <th>Celkem zbývá</th>
+                <th>Zisk z úroků</th>
+                <th>VS</th>
+            </tr>
+        </thead>
         <tbody>
-            <tr th:each="t : ${recentTransfers}">
-                <td th:text="${#temporals.format(t.transferDate,'dd.MM.yyyy HH:mm')}">datum</td>
-                <td th:text="${t.sourceAccount.idAccount}">–</td>
-                <td th:text="${t.destinationAccount.idAccount}">–</td>
-                <td th:text="${#numbers.formatDecimal(t.amount,1,'COMMA',2,'POINT')} + ' Kč'">0 Kč</td>
-                <td th:text="${t.variableSymbol}">–</td>
+            <tr th:each="l : ${loanDetails}">
+                <td th:text="${l['loanName']}">–</td>
+                <td th:text="${l['clientName']}">–</td>
+                <td th:text="${#numbers.formatDecimal(l['currentBase'],1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(l['interest'],1,'COMMA',2,'POINT')} + ' %'">–</td>
+                <td th:text="${l['termMonths']}">–</td>
+                <td style="color:var(--green);"
+                    th:text="${#numbers.formatDecimal(l['monthlyPayment'],1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${#numbers.formatDecimal(l['totalRemaining'],1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td style="color:var(--gold);"
+                    th:text="${#numbers.formatDecimal(l['profit'],1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+                <td th:text="${l['variableSymbol']}">–</td>
             </tr>
         </tbody>
     </table>
+    <div th:if="${#lists.isEmpty(loanDetails)}" style="color:var(--muted);margin-bottom:2rem;">Žádné aktivní úvěry.</div>
 </main>
 </body>
 </html>

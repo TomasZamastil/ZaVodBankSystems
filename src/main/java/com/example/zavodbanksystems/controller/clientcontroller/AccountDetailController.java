@@ -59,7 +59,7 @@ public class AccountDetailController {
         model.addAttribute("transfers", transfers);
         model.addAttribute("allClients", clientRepository.findAll());
         model.addAttribute("isEmployee", isEmployee);
-        model.addAttribute("isManager", session.getAttribute("isManager"));
+        model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "client/accountDetail";
     }
 

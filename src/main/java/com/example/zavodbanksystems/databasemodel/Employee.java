@@ -3,7 +3,7 @@ package com.example.zavodbanksystems.databasemodel;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-//TODO: ORM už by měl odpovídat, ještě to pak ale hoď do AI, aby zkontrolova, že to odpovídá ER diagramu
+
 @Entity
 @Table(name = "Employee")
 public class Employee {
@@ -28,7 +28,7 @@ public class Employee {
     @Column(name = "hire_date", nullable = false)
     private LocalDateTime hireDate;
 
-    @Column(name = "bonus", precision = 7, scale = 4)
+    @Column(name = "bonus", precision = 19, scale = 4)
     private BigDecimal bonus;
 
     @Column(name = "commission", precision = 19, scale = 4)

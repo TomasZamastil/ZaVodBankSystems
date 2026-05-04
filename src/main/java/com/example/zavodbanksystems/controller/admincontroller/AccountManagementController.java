@@ -31,7 +31,7 @@ public class AccountManagementController {
         model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("accountTypes", accountTypeRepository.findAll());
         model.addAttribute("clients", clientRepository.findAll());
-        model.addAttribute("isManager", session.getAttribute("isManager"));
+        model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "admin/accountManagement";
     }
 
@@ -56,7 +56,7 @@ public class AccountManagementController {
         model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("accountTypes", accountTypeRepository.findAll());
         model.addAttribute("clients", clientRepository.findAll());
-        model.addAttribute("isManager", session.getAttribute("isManager"));
+        model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));
         return "admin/accountManagement";
     }
 }

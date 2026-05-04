@@ -17,6 +17,7 @@
         <a href="/clientOverview" class="nav-link">Klienti</a>
         <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
         <a href="/clientCreation" class="nav-link">Nový klient</a>
+    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
         <a href="/accountManagement" class="nav-link">Správa účtů</a>
         <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
         <a href="/salaryManagement" class="nav-link">Mzdy</a>
@@ -60,7 +61,11 @@
             <a th:href="@{/transfer(sourceAccountId=${account.idAccount})}"
                class="btn"
                th:if="${account.activeStatus}"
-               style="display:block;text-align:center;">Nový převod</a>
+               style="display:block;text-align:center;">Převod v rámci ZaVod Bank</a>
+            <a th:href="@{/transfer/outside(sourceAccountId=${account.idAccount})}"
+               class="btn"
+               th:if="${account.activeStatus}"
+               style="display:block;text-align:center;background:var(--navy-mid);color:var(--off-white);margin-top:0.5rem;">Mezibankovní převod</a>
 
             <div th:if="${isEmployee}" class="card">
                 <div class="card-title">Akce zaměstnance</div>
