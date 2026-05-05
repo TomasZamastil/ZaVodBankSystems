@@ -25,6 +25,7 @@ public class EmployeeManagementController {
     @Autowired private AddressRepository addressRepository;
     @Autowired private AssetInvestmentRepository assetInvestmentRepository;
     @Autowired private SalaryRepository salaryRepository;
+    @Autowired private LiabilityInvestmentRepository liabilityInvestmentRepository;
 
     @GetMapping("/employeeManagement")
     @Transactional
@@ -164,6 +165,23 @@ public class EmployeeManagementController {
         BigDecimal net = gross.multiply(new BigDecimal("0.89")).setScale(4, RoundingMode.HALF_UP);
 
         salaryRepository.save(new Salary(emp, net, LocalDateTime.now(), false));
+
+        String periodLabel = YearMonth.now().format(java.time.format.DateTimeFormatter.ofPattern("MM-yyyy"));
+        String liabilityName = "Mzda - " + emp.getClient().getName() + " " + periodLabel;
+        boolean alreadyExists = liabilityInvestmentRepository.findAll().stream()
+                .anyMatch(li -> li.getLoanName().equals(liabilityName));
+        if (!alreadyExists) {
+            LiabilityInvestment salaryLiability = new LiabilityInvestment(
+                    net,
+                    liabilityName,
+                    0,
+                    BigDecimal.ZERO,
+                    true,
+                    net,
+                    null
+            );
+            liabilityInvestmentRepository.save(salaryLiability);
+        }
     }
 
     private void loadModel(Model model, HttpSession session) {

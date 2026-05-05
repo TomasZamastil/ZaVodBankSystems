@@ -8,6 +8,7 @@ import com.example.zavodbanksystems.repos.ClientRepository;
 import com.example.zavodbanksystems.repos.MoneyTransferRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ public class AccountDetailController {
     @Autowired private AccountRepository accountRepository;
     @Autowired private MoneyTransferRepository moneyTransferRepository;
     @Autowired private ClientRepository clientRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @GetMapping("/account/{id}")
     @Transactional
@@ -55,68 +55,13 @@ public class AccountDetailController {
         if ("deposit".equals(success)) model.addAttribute("successMsg", "Vklad proběhl úspěšně.");
         if ("transfer".equals(success)) model.addAttribute("successMsg", "Převod proběhl úspěšně.");
 
-        // Pro každý převod připrav čitelný popis protistrany
-        ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, String>> transferDisplayList = new ArrayList<>();
-        for (MoneyTransfer t : transfers) {
-            Map<String, String> display = new LinkedHashMap<>();
-            display.put("date", t.getTransferDate().toString());
-            display.put("amount", String.format("%,.2f Kč", t.getAmount()).replace(",", " ").replace(".", ","));
-            display.put("variableSymbol", String.valueOf(t.getVariableSymbol()));
-            boolean isOutgoing = t.getSourceAccount().getIdAccount().equals(id);
-            display.put("direction", isOutgoing ? "out" : "in");
-
-            // Zkontroluj jestli je to mezibankovní – parsuj JSON
-            String tokenComs = t.getOutsideTokenComs();
-            if (tokenComs != null && !tokenComs.isBlank()) {
-                try {
-                    JsonNode root = mapper.readTree(tokenComs);
-                    JsonNode outgoing = root.path("outgoing");
-                    JsonNode incoming = root.path("incoming");
-                    if (!outgoing.isMissingNode()) {
-                        String accNum = outgoing.path("target_account_number").asText("");
-                        String bankCode = outgoing.path("target_bank_code").asText("");
-                        String status = incoming.path("status").asText("?");
-                        String recipientName = incoming.path("recipient_name").asText("");
-                        String bankName = incoming.path("recipient_bank").asText("");
-                        if (!accNum.isBlank()) {
-                            String label = accNum + "/" + bankCode;
-                            if (!recipientName.isBlank()) label += " (" + recipientName;
-                            if (!bankName.isBlank()) label += ", " + bankName;
-                            if (!recipientName.isBlank()) label += ")";
-                            if ("REJECTED".equals(status)) label += " – ZAMÍTNUTO";
-                            display.put("counterparty", label);
-                            display.put("interbank", "true");
-                        } else {
-                            display.put("counterparty", "č. " + (isOutgoing
-                                    ? t.getDestinationAccount().getIdAccount()
-                                    : t.getSourceAccount().getIdAccount()));
-                        }
-                    } else {
-                        display.put("counterparty", "č. " + (isOutgoing
-                                ? t.getDestinationAccount().getIdAccount()
-                                : t.getSourceAccount().getIdAccount()));
-                    }
-                } catch (Exception e) {
-                    display.put("counterparty", "č. " + (isOutgoing
-                            ? t.getDestinationAccount().getIdAccount()
-                            : t.getSourceAccount().getIdAccount()));
-                }
-            } else {
-                display.put("counterparty", "č. " + (isOutgoing
-                        ? t.getDestinationAccount().getIdAccount()
-                        : t.getSourceAccount().getIdAccount()));
-                display.put("interbank", "false");
-            }
-            // Poznámka pro mzdy a závazky
-            if (t.getSalary() != null) display.put("note", "výplata mzdy");
-            if (t.getLiabilityInvestment() != null) display.put("note", "úrok na účtu");
-            transferDisplayList.add(display);
-        }
+        List<Map<String, Object>> transferDisplay = jdbcTemplate.queryForList(
+                "SELECT * FROM v_transfer_history_ext WHERE source_account_id = ? OR destination_account_id = ?",
+                id, id);
 
         model.addAttribute("account", account);
         model.addAttribute("transfers", transfers);
-        model.addAttribute("transferDisplay", transferDisplayList);
+        model.addAttribute("transferDisplay", transferDisplay);
         model.addAttribute("allClients", clientRepository.findAll());
         model.addAttribute("isEmployee", isEmployee);
         model.addAttribute("isManager", Boolean.TRUE.equals(session.getAttribute("isManager")));

@@ -17,7 +17,7 @@
         <a href="/clientOverview" class="nav-link">Klienti</a>
         <a href="/employeeOverview" class="nav-link">Zaměstnanci</a>
         <a href="/clientCreation" class="nav-link">Nový klient</a>
-    <a href="/loanCreation" class="nav-link">Nový úvěr</a>
+        <a href="/loanCreation" class="nav-link">Nový úvěr</a>
         <a href="/accountManagement" class="nav-link">Správa účtů</a>
         <a href="/employeeManagement" class="nav-link">Správa zaměstnanců</a>
         <a href="/salaryManagement" class="nav-link">Mzdy</a>
@@ -61,43 +61,62 @@
 
     <table th:if="${not #lists.isEmpty(assetInvestments)}" style="margin-bottom:2.5rem;">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th th:if="${isEmployee}">Klient</th>
-                <th th:if="${isEmployee}">Správce úvěru</th>
-                <th>Název</th>
-                <th>Původní výše</th>
-                <th>Aktuální zůstatek</th>
-                <th>Úrok</th>
-                <th>Splatnost</th>
-                <th>Měsíční splátka</th>
-                <th>Variabilní symbol</th>
-                <th>Stav</th>
-            </tr>
+        <tr>
+            <th>ID</th>
+            <th th:if="${isEmployee}">Klient</th>
+            <th th:if="${isEmployee}">Správce úvěru</th>
+            <th>Název</th>
+            <th>Původní výše</th>
+            <th>Aktuální zůstatek</th>
+            <th>Úrok</th>
+            <th>Splatnost</th>
+            <th>Měsíční splátka</th>
+            <th>Variabilní symbol</th>
+            <th>Stav</th>
+            <th th:if="${not isEmployee}">Splátka</th>
+        </tr>
         </thead>
         <tbody>
-            <tr th:each="ai : ${assetInvestments}">
-                <td th:text="${ai.idAssetInvestment}">–</td>
-                <td th:if="${isEmployee}" th:text="${ai.client.name}">–</td>
-                <td th:if="${isEmployee}" th:text="${ai.employee.client.name}">–</td>
-                <td th:text="${ai.loanName}">–</td>
-                <td th:text="${#numbers.formatDecimal(ai.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
-                <td th:text="${#numbers.formatDecimal(ai.currentBase,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
-                <td th:text="${#numbers.formatDecimal(ai.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
-                <td th:text="${ai.termMonths} + ' měs.'">–</td>
-                <td th:text="${#numbers.formatDecimal(ai.calculateMonthlyPayment(),1,'COMMA',2,'POINT')} + ' Kč'">–</td>
-                <td th:text="${ai.variableSymbol}">–</td>
-                <td>
+        <tr th:each="ai : ${assetInvestments}">
+            <td th:text="${ai.idAssetInvestment}">–</td>
+            <td th:if="${isEmployee}" th:text="${ai.client.name}">–</td>
+            <td th:if="${isEmployee}" th:text="${ai.employee.client.name}">–</td>
+            <td th:text="${ai.loanName}">–</td>
+            <td th:text="${#numbers.formatDecimal(ai.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+            <td th:text="${#numbers.formatDecimal(ai.currentBase,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+            <td th:text="${#numbers.formatDecimal(ai.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
+            <td th:text="${ai.termMonths} + ' měs.'">–</td>
+            <td th:text="${#numbers.formatDecimal(ai.calculateMonthlyPayment(),1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+            <td th:text="${ai.variableSymbol}">–</td>
+            <td>
                     <span class="badge"
                           th:classappend="${ai.active} ? 'badge-on' : 'badge-off'"
                           th:text="${ai.active} ? 'Aktivní' : 'Splacen'">–</span>
-                </td>
-            </tr>
+            </td>
+            <td th:if="${not isEmployee}">
+                <form th:if="${ai.active}" th:action="@{/investments/repay}" method="post"
+                      style="display:flex;flex-direction:column;gap:0.4rem;min-width:180px;">
+                    <input type="hidden" name="variableSymbol" th:value="${ai.variableSymbol}"/>
+                    <input type="hidden" name="amount" th:value="${ai.calculateMonthlyPayment()}"/>
+                    <select name="sourceAccountId" class="input" style="font-size:0.8rem;padding:0.3rem 0.5rem;" required>
+                        <option value="" disabled selected>— vyberte účet —</option>
+                        <option th:each="acc : ${clientAccounts}"
+                                th:value="${acc.idAccount}"
+                                th:text="'č. ' + ${acc.idAccount} + ' (' + ${acc.accountType.accountTypeName} + ') – ' + ${#numbers.formatDecimal(acc.balance,1,'COMMA',2,'POINT')} + ' Kč'">–</option>
+                    </select>
+                    <button type="submit" class="btn"
+                            style="font-size:0.8rem;padding:0.35rem 0.7rem;background:var(--green);color:white;"
+                            th:text="'Zaplatit ' + ${#numbers.formatDecimal(ai.calculateMonthlyPayment(),1,'COMMA',2,'POINT')} + ' Kč'">
+                        Zaplatit
+                    </button>
+                </form>
+                <span th:if="${not ai.active}" style="color:var(--muted);font-size:0.85rem;">–</span>
+            </td>
+        </tr>
         </tbody>
     </table>
     <div th:if="${#lists.isEmpty(assetInvestments)}" style="color:var(--muted);margin-bottom:2rem;">Žádné úvěry.</div>
 
-    <!-- LIABILITY INVESTMENTS -->
     <h2 style="margin-bottom:1rem;">
         Závazky
         <span th:if="${isEmployee}" style="font-size:0.8rem;font-weight:400;color:var(--muted);margin-left:0.5rem;">
@@ -108,35 +127,35 @@
 
     <table th:if="${not #lists.isEmpty(liabilityInvestments)}">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th th:if="${isEmployee}">Účet č.</th>
-                <th>Název</th>
-                <th>Základ</th>
-                <th>Měsíční úrok</th>
-                <th>Sazba</th>
-                <th>Stav</th>
-            </tr>
+        <tr>
+            <th>ID</th>
+            <th th:if="${isEmployee}">Účet č.</th>
+            <th>Název</th>
+            <th>Základ</th>
+            <th>Měsíční úrok</th>
+            <th>Sazba</th>
+            <th>Stav</th>
+        </tr>
         </thead>
         <tbody>
-            <tr th:each="li : ${liabilityInvestments}">
-                <td th:text="${li.idLiabilityInvestment}">–</td>
-                <td th:if="${isEmployee}">
-                    <a th:if="${li.account != null}"
-                       th:href="@{/account/{id}(id=${li.account.idAccount})}"
-                       th:text="'č. ' + ${li.account.idAccount}">–</a>
-                    <span th:if="${li.account == null}">–</span>
-                </td>
-                <td th:text="${li.loanName}">–</td>
-                <td th:text="${#numbers.formatDecimal(li.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
-                <td th:text="${#numbers.formatDecimal(li.currentBase,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
-                <td th:text="${#numbers.formatDecimal(li.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
-                <td>
+        <tr th:each="li : ${liabilityInvestments}">
+            <td th:text="${li.idLiabilityInvestment}">–</td>
+            <td th:if="${isEmployee}">
+                <a th:if="${li.account != null}"
+                   th:href="@{/account/{id}(id=${li.account.idAccount})}"
+                   th:text="'č. ' + ${li.account.idAccount}">–</a>
+                <span th:if="${li.account == null}">–</span>
+            </td>
+            <td th:text="${li.loanName}">–</td>
+            <td th:text="${#numbers.formatDecimal(li.base,1,'COMMA',2,'POINT')} + ' Kč'">–</td>
+            <td th:text="${li.account != null} ? ${#numbers.formatDecimal(li.currentBase,1,'COMMA',2,'POINT')} + ' Kč' : '–'">–</td>
+            <td th:text="${#numbers.formatDecimal(li.interest,1,'COMMA',2,'POINT')} + ' %'">–</td>
+            <td>
                     <span class="badge"
                           th:classappend="${li.active} ? 'badge-on' : 'badge-off'"
                           th:text="${li.active} ? 'Aktivní' : 'Splacen'">–</span>
-                </td>
-            </tr>
+            </td>
+        </tr>
         </tbody>
     </table>
     <div th:if="${#lists.isEmpty(liabilityInvestments)}" style="color:var(--muted);">

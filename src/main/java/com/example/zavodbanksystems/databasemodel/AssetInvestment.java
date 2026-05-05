@@ -37,7 +37,6 @@ public class AssetInvestment {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
-    // Počet měsíců splatnosti – potřebný pro výpočet anuitní splátky
     @Column(name = "term_months", nullable = false)
     private Integer termMonths;
 
@@ -58,8 +57,6 @@ public class AssetInvestment {
         this.termMonths = termMonths;
     }
 
-    // Výpočet anuitní splátky M = P * r * (1+r)^n / ((1+r)^n - 1)
-    // kde r = měsíční sazba = interest / 100 / 12, n = termMonths
     public BigDecimal calculateMonthlyPayment() {
         if (termMonths == null || termMonths <= 0) return BigDecimal.ZERO;
         double r = interest.doubleValue() / 100.0 / 12.0;

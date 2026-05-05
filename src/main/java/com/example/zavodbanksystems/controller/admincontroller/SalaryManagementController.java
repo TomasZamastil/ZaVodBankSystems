@@ -2,10 +2,12 @@ package com.example.zavodbanksystems.controller.admincontroller;
 
 import com.example.zavodbanksystems.databasemodel.Account;
 import com.example.zavodbanksystems.databasemodel.AccountType;
+import com.example.zavodbanksystems.databasemodel.LiabilityInvestment;
 import com.example.zavodbanksystems.databasemodel.MoneyTransfer;
 import com.example.zavodbanksystems.databasemodel.Salary;
 import com.example.zavodbanksystems.repos.AccountRepository;
 import com.example.zavodbanksystems.repos.EmployeeRepository;
+import com.example.zavodbanksystems.repos.LiabilityInvestmentRepository;
 import com.example.zavodbanksystems.repos.MoneyTransferRepository;
 import com.example.zavodbanksystems.repos.SalaryRepository;
 import jakarta.servlet.http.HttpSession;
@@ -28,6 +30,7 @@ public class SalaryManagementController {
     @Autowired private EmployeeRepository employeeRepository;
     @Autowired private AccountRepository accountRepository;
     @Autowired private MoneyTransferRepository moneyTransferRepository;
+    @Autowired private LiabilityInvestmentRepository liabilityInvestmentRepository;
 
     @GetMapping("/salaryManagement")
     public String salaryManagement(HttpSession session, Model model) {
@@ -102,6 +105,16 @@ public class SalaryManagementController {
         salary.setPaid(true);
         salary.setPayday(LocalDateTime.now());
         salaryRepository.save(salary);
+
+        String periodLabel = java.time.YearMonth.from(salary.getPayday())
+                .format(java.time.format.DateTimeFormatter.ofPattern("MM-yyyy"));
+        String liabilityName = "Mzda - " + salary.getEmployee().getClient().getName() + " " + periodLabel;
+        liabilityInvestmentRepository.findAll().stream()
+                .filter(li -> li.getLoanName().equals(liabilityName) && Boolean.TRUE.equals(li.getActive()))
+                .forEach(li -> {
+                    li.setActive(false);
+                    liabilityInvestmentRepository.save(li);
+                });
     }
 
     private void loadModel(Model model, HttpSession session) {
